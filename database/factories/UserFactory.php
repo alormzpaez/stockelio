@@ -29,6 +29,14 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'address1' => 'Calle #001 Colonia',
+            'city' => 'Chatsworth',
+            'state_code' => 'CA',
+            'state_name' => 'California',
+            'country_code' => 'US',
+            'country_name' => 'United States',
+            'zip' => '91311',
+            'phone' => '8181818181',
         ];
     }
 

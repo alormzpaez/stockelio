@@ -40,6 +40,16 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+
+             // The next data it's needed to get automatically
+            'address1' => 'Calle #001 Colonia',
+            'city' => 'Chatsworth',
+            'state_code' => 'CA',
+            'state_name' => 'California',
+            'country_code' => 'US',
+            'country_name' => 'United States',
+            'zip' => '91311',
+            'phone' => '8181818181',
         ]);
 
         event(new Registered($user));
