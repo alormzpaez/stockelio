@@ -28,7 +28,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                 <div>{ user.name }</div>
                             </div>
                         </Avatar>
-                        <Button className='block md:hidden' color="gray" onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}>
+                        <Button className='block md:hidden mr-2' color="gray" onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}>
                             <HiMenu className='text-2xl'/>
                         </Button>
                     </div>
