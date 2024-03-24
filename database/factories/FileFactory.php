@@ -18,7 +18,7 @@ class FileFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => fake()->unique()->numberBetween(),
+            'id' => fake()->unique()->numberBetween(1),
             'variant_id' => Variant::factory(),
             'url' => fake()->url(),
             'filename' => fake()->name(),

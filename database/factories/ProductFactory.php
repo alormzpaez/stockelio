@@ -17,7 +17,7 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => fake()->unique()->randomNumber(),
+            'id' => fake()->unique()->randomNumber(1),
             'name' => fake()->name(),
             'thumbnail_url' => fake()->imageUrl(),
         ];
