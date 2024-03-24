@@ -3,7 +3,7 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link } from '@inertiajs/react';
 import { User } from '@/types';
 import { Button, DarkThemeToggle, Flowbite, Sidebar } from 'flowbite-react';
-import { HiArrowSmRight, HiShoppingBag, HiUser, HiMenu } from 'react-icons/hi';
+import { HiArrowSmRight, HiShoppingBag, HiUser, HiMenu, HiHome } from 'react-icons/hi';
 import { Avatar } from 'flowbite-react';
 
 export default function Authenticated({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
@@ -54,6 +54,11 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                     </Sidebar.Item>
                                 </Link>
                                 <Link href={route('dashboard')}>
+                                    <Sidebar.Item icon={HiHome}>
+                                        Dashboard
+                                    </Sidebar.Item>
+                                </Link>
+                                <Link href={route('products.index')}>
                                     <Sidebar.Item icon={HiShoppingBag}>
                                         Productos
                                     </Sidebar.Item>
