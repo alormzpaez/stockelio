@@ -1,5 +1,5 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { PageProps, PaginationInfo, Product } from '@/types';
 import { Pagination } from 'flowbite-react';
 import Card from '@/Components/Card';
@@ -24,12 +24,16 @@ export default function Index({ auth, products }: PageProps<{ products: Paginati
                                 )
                             }
                         </div>
-                        <div className="flex justify-center my-10 overflow-x-auto sm:justify-center">
+                        <div className="flex justify-center my-10 sm:justify-center">
                             <Pagination
                                 layout="pagination"
-                                currentPage={1}
-                                totalPages={2}
-                                onPageChange={() => {}}
+                                currentPage={products.current_page}
+                                totalPages={products.last_page}
+                                onPageChange={(page) => {
+                                    router.visit(route('products.index', {
+                                        page
+                                    }))
+                                }}
                                 previousLabel=""
                                 nextLabel=""
                                 showIcons
