@@ -29,5 +29,5 @@ require __DIR__.'/auth.php';
 
 // System routes
 Route::middleware('auth')->group(function () {
-    Route::resource('products', ProductController::class)->only(['index']);
+    Route::resource('products', ProductController::class)->only(['index', 'show']);
 });

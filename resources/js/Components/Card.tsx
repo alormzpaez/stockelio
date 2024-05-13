@@ -1,17 +1,20 @@
 import { Button, Card as FlowbiteCard } from "flowbite-react";
+import { MouseEvent } from "react";
 
-export default function Card({ name, imgUrl, variantsCount, price }: {
+export default function Card({ name, imgUrl, variantsCount, price, onClick }: {
     name: string,
     imgUrl: string,
     variantsCount: number,
     price: number,
+    onClick?: (event: MouseEvent<HTMLDivElement>) => void;
 }) {
     return (
         <FlowbiteCard
-            className="max-w-xs overflow-hidden"
+            className="max-w-xs overflow-hidden cursor-pointer"
             imgAlt={name}
             imgSrc={imgUrl}
-            >
+            onClick={onClick}
+        >
             <div className='flex'>
                 <h5 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
                     { name }

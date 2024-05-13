@@ -11,6 +11,9 @@ export interface Product {
     thumbnail_url: string;
     cheapest_variant: Variant|null;
     variants_count: number;
+    description: string;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface Variant {

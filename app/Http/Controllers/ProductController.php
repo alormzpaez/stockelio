@@ -42,9 +42,11 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Product $product)
+    public function show(Product $product): Response
     {
-        //
+        $product->load('cheapestVariant:id,variants.product_id,retail_price');
+
+        return Inertia::render('Products/Show', compact('product'));
     }
 
     /**

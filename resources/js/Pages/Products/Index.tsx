@@ -20,7 +20,9 @@ export default function Index({ auth, products }: PageProps<{ products: Paginati
                         <div className='flex flex-col items-center gap-2 px-2 sm:grid sm:grid-cols-2 sm:place-items-center lg:grid-cols-3'>
                             {
                                 products.data.map((product, index) => 
-                                    <Card name={product.name} price={product.cheapest_variant?.retail_price ?? 0} imgUrl={product.thumbnail_url} variantsCount={product.variants_count} key={index} />
+                                    <Card name={product.name} price={product.cheapest_variant?.retail_price ?? 0} imgUrl={product.thumbnail_url} variantsCount={product.variants_count} key={index} onClick={() => {
+                                        router.visit(route('products.show', product.id))
+                                    }} />
                                 )
                             }
                         </div>
