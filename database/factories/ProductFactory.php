@@ -20,6 +20,7 @@ class ProductFactory extends Factory
             'id' => fake()->unique()->numberBetween(1),
             'name' => fake()->name(),
             'thumbnail_url' => fake()->imageUrl(),
+            'description' => fake()->paragraphs(3, true),
         ];
     }
 }

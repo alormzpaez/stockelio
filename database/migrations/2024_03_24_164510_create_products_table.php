@@ -15,6 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id');
             $table->string('name');
             $table->text('thumbnail_url');
+            $table->text('description');
             $table->timestamps();
         });
     }
