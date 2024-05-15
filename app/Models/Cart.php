@@ -7,20 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Variant extends Model
+class Cart extends Model
 {
     use HasFactory;
 
-    public $incrementing = false;
-
-    public function product(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
-    }
-
-    public function files(): HasMany
-    {
-        return $this->hasMany(File::class);
+        return $this->belongsTo(User::class);
     }
 
     public function orders(): HasMany

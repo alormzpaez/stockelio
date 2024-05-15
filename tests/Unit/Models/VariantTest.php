@@ -3,6 +3,7 @@
 namespace Tests\Unit\Models;
 
 use App\Models\File;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Variant;
 use Illuminate\Database\Eloquent\Collection;
@@ -26,5 +27,13 @@ class VariantTest extends TestCase
 
         $this->assertInstanceOf(Collection::class, $variant->files);
         $this->assertInstanceOf(File::class, $variant->files->get(0));
+    }
+
+    public function test_has_many_orders(): void
+    {
+        $variant = Variant::factory()->hasOrders()->create();
+
+        $this->assertInstanceOf(Collection::class, $variant->orders);
+        $this->assertInstanceOf(Order::class, $variant->orders->get(0));
     }
 }
