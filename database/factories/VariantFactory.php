@@ -20,7 +20,6 @@ class VariantFactory extends Factory
         return [
             'id' => fake()->unique()->numberBetween(1),
             'product_id' => Product::factory(),
-            'name' => fake()->name(),
             'retail_price' => fake()->randomFloat(2, 1, 1000),
             'currency' => fake()->currencyCode(),
         ];
