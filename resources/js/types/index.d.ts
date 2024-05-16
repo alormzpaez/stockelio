@@ -20,6 +20,24 @@ export interface Variant {
     id: number;
     product_id: number;
     retail_price: number;
+    product: Product;
+}
+
+export interface Order {
+    id: number;
+    cart_id: number;
+    status: string;
+    quantity: number,
+    variant_id: number;
+    variant: Variant;
+}
+
+export interface Cart {
+    id: number;
+    user_id: number;
+    created_at: string;
+    updated_at: string;
+    orders: Order[];
 }
 
 export interface PaginationInfo<T> {

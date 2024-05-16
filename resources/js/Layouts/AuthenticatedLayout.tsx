@@ -11,11 +11,11 @@ export default function Authenticated({ user, header, children }: PropsWithChild
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
-            <nav className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
-                <div className="flex justify-between items-center h-16 w-full pl-4 mx-auto sm:px-6 lg:px-8">
+            <nav className="bg-white border-b border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+                <div className="flex items-center justify-between w-full h-16 pl-4 mx-auto sm:px-6 lg:px-8">
                     <Link href="/" className='flex gap-2'>
-                        <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
-                        <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white hidden md:block">Stockelio</span>
+                        <ApplicationLogo className="block w-auto text-gray-800 fill-current h-9 dark:text-gray-200" />
+                        <span className="self-center hidden text-xl font-semibold whitespace-nowrap dark:text-white md:block">Stockelio</span>
                     </Link>
                     <div className='flex'>
                         <div className='flex mr-2'>
@@ -24,11 +24,11 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                             </Flowbite>
                         </div>
                         <Avatar className="cursor-pointer" img="" status="online" statusPosition="bottom-right">
-                            <div className="space-y-1 font-medium dark:text-white hidden md:block">
+                            <div className="hidden space-y-1 font-medium dark:text-white md:block">
                                 <div>{ user.name }</div>
                             </div>
                         </Avatar>
-                        <Button className='block md:hidden mr-2' color="gray" onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}>
+                        <Button className='block mr-2 md:hidden' color="gray" onClick={() => setShowingNavigationDropdown(!showingNavigationDropdown)}>
                             <HiMenu className='text-2xl'/>
                         </Button>
                     </div>
@@ -36,8 +36,8 @@ export default function Authenticated({ user, header, children }: PropsWithChild
             </nav>
 
             {/* {header && (
-                <header className="bg-white dark:bg-gray-800 shadow">
-                    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{header}</div>
+                <header className="bg-white shadow dark:bg-gray-800">
+                    <div className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">{header}</div>
                 </header>
             )} */}
 
@@ -73,7 +73,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                     </Sidebar>
                 </div>
 
-                <main className='flex-grow'>{children}</main>
+                <main className='flex-grow overflow-hidden'>{children}</main>
             </div>
         </div>
     );
