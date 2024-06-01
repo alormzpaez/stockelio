@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,6 +39,8 @@ class CartController extends Controller
      */
     public function show(Cart $cart): Response
     {
+        Gate::authorize('view', $cart);
+
         $cart->load([
             'orders:id,cart_id,status,quantity,variant_id',
             'orders.variant:id,product_id,retail_price',

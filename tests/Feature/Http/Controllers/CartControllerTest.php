@@ -77,4 +77,18 @@ class CartControllerTest extends TestCase
             )
         );
     }
+
+    public function test_show_not_own_cart(): void
+    {
+        $user1 = User::factory()
+            ->has(Cart::factory())
+        ->createQuietly();
+
+        Sanctum::actingAs($user2 = User::factory()
+            ->has(Cart::factory())
+        ->createQuietly());
+
+        $this->get(route('carts.show', $user1->cart->id))->assertForbidden();
+        $this->get(route('carts.show', $user2->cart->id))->assertOk();
+    }
 }
