@@ -19,9 +19,10 @@ return new class extends Migration
             $table->foreignIdFor(Variant::class);
             $table->integer('quantity');
             $table->enum('status', [
-                'draft', // The order is created but is not yet submitted for fulfillment. You still can edit it and confirm later.
+                'incart',
+                'draft', // The order is created in system but is not yet submitted for fulfillment. You still can edit it and confirm later.
                 'fulfilled', // All items have been shipped successfully
-            ])->default('draft');
+            ])->default('incart');
             $table->timestamps();
         });
     }
