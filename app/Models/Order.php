@@ -22,6 +22,16 @@ class Order extends Model
     protected $attributes = [
         'status' => self::IN_CART_STATUS,
     ];
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'variant_id',
+        'quantity',
+    ];
     
     public function cart(): BelongsTo
     {
