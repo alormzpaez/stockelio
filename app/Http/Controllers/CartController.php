@@ -47,7 +47,17 @@ class CartController extends Controller
             'orders.variant.product:id,name,thumbnail_url',
         ]);
 
-        return Inertia::render('Carts/Show', compact('cart'));
+        $sortedOrders = $cart->orders->sortDesc()->values();
+
+        return Inertia::render('Carts/Show', [
+            'cart' => [
+                'id' => $cart->id,
+                'user_id' => $cart->user_id,
+                'created_at' => $cart->created_at,
+                'updated_at' => $cart->updated_at,
+                'orders' => $sortedOrders,
+            ]
+        ]);
     }
 
     /**

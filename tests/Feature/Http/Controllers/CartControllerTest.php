@@ -3,6 +3,7 @@
 namespace Tests\Feature\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -48,6 +49,9 @@ class CartControllerTest extends TestCase
             ->has(Cart::factory()->hasOrders(2))
         ->createQuietly());
 
+        $order1 = Order::first();
+        $order2 = Order::orderByDesc('id')->first();
+
         $this->get(route('carts.show', $user->cart->id))
             ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) =>
@@ -74,6 +78,8 @@ class CartControllerTest extends TestCase
                         )
                     )
                 )
+                ->where('orders.0.id', $order2->id)
+                ->where('orders.1.id', $order1->id)
             )
         );
     }
