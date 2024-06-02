@@ -33,5 +33,5 @@ require __DIR__.'/auth.php';
 Route::middleware('auth')->group(function () {
     Route::resource('products', ProductController::class)->only(['index', 'show']);
     Route::resource('carts', CartController::class)->only(['show']);
-    Route::resource('orders', OrderController::class)->only(['store', 'destroy']);
+    Route::resource('orders', OrderController::class)->only(['store', 'destroy', 'update']);
 });

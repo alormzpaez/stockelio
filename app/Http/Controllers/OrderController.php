@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
+use App\Http\Requests\UpdateOrderRequest;
 use App\Models\Order;
 use App\Models\Variant;
 use Illuminate\Http\Request;
@@ -68,9 +69,17 @@ class OrderController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Order $order)
+    public function update(UpdateOrderRequest $request, Order $order)
     {
-        //
+        $message = null;
+
+        if ($order->update($request->validated())) {
+            $message = 'Tu carrito ha sido actualizado.';
+        }
+
+        $request->session()->flash('message', $message);
+
+        return to_route('carts.show', Auth::user()->cart->id);
     }
 
     /**

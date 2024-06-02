@@ -26,7 +26,7 @@ class OrderControllerTest extends TestCase
         $this->get("{$this->url}/create")->assertMethodNotAllowed(); // create
         $this->post($this->url)->assertRedirect(route('login')); // post
         $this->get("{$this->url}/edit")->assertMethodNotAllowed(); // edit
-        $this->put("{$this->url}/{$order->id}")->assertMethodNotAllowed(); // update
+        $this->put("{$this->url}/{$order->id}")->assertRedirect(route('login')); // update
         $this->delete("{$this->url}/{$order->id}")->assertRedirect(route('login')); // destroy
     }
 
@@ -40,7 +40,7 @@ class OrderControllerTest extends TestCase
         $this->get("{$this->url}/create")->assertMethodNotAllowed(); // create
         $this->post($this->url)->assertInvalid(); // post
         $this->get("{$this->url}/edit")->assertMethodNotAllowed(); // edit
-        $this->put("{$this->url}/{$order->id}")->assertMethodNotAllowed(); // update
+        $this->put("{$this->url}/{$order->id}")->assertInvalid(); // update
         $this->delete("{$this->url}/{$order->id}")->assertRedirect(); // destroy
     }
 
@@ -151,6 +151,105 @@ class OrderControllerTest extends TestCase
                 'quantity',
             ])
             ->assertRedirect(route('products.show', $variant->product_id))
+        ->assertSessionHasErrors();
+    }
+
+    public function test_update(): void
+    {
+        Sanctum::actingAs($user = User::factory()
+            ->has(Cart::factory()->has(Order::factory()->state([
+                'quantity' => 1,
+            ])))
+        ->createQuietly());
+
+        $order = Order::first();
+
+        $this->assertEquals($order->quantity, 1);
+
+        $this->get(route('carts.show', $user->cart->id))->assertOk();
+
+        $data = [
+            'quantity' => 2,
+        ];
+
+        $this->put(route('orders.update', $order->id), $data)
+            ->assertValid()
+            ->assertRedirect(route('carts.show', $user->cart->id))
+        ->assertSessionHas('message', 'Tu carrito ha sido actualizado.');
+
+        $order->refresh();
+        $this->assertEquals($order->quantity, 2);
+    }
+
+    public function test_update_invalid(): void
+    {
+        $order = Order::factory()->create();
+        Sanctum::actingAs($user = User::factory()->create());
+        
+        $this->get(route('carts.show', $user->cart->id))->assertOk();
+
+        $data = [];
+
+        $this->put(route('orders.update', $order->id), $data)
+            ->assertInvalid([
+                'quantity',
+            ])
+            ->assertRedirect(route('carts.show', $user->cart->id))
+        ->assertSessionHasErrors();
+
+        $data = [
+            'quantity',
+        ];
+
+        $this->put(route('orders.update', $order->id), $data)
+            ->assertInvalid([
+                'quantity',
+            ])
+            ->assertRedirect(route('carts.show', $user->cart->id))
+        ->assertSessionHasErrors();
+
+        $data = [
+            'quantity' => null,
+        ];
+
+        $this->put(route('orders.update', $order->id), $data)
+            ->assertInvalid([
+                'quantity',
+            ])
+            ->assertRedirect(route('carts.show', $user->cart->id))
+        ->assertSessionHasErrors();
+
+        $data = [
+            'quantity' => '',
+        ];
+
+        $this->put(route('orders.update', $order->id), $data)
+            ->assertInvalid([
+                'quantity',
+            ])
+            ->assertRedirect(route('carts.show', $user->cart->id))
+        ->assertSessionHasErrors();
+
+        $data = [
+            'quantity' => ' ',
+        ];
+
+        $this->put(route('orders.update', $order->id), $data)
+            ->assertInvalid([
+                'quantity',
+            ])
+            ->assertRedirect(route('carts.show', $user->cart->id))
+        ->assertSessionHasErrors();
+
+        $data = [
+            'quantity' => 0,
+        ];
+
+        $this->put(route('orders.update', $order->id), $data)
+            ->assertInvalid([
+                'quantity',
+            ])
+            ->assertRedirect(route('carts.show', $user->cart->id))
         ->assertSessionHasErrors();
     }
 
