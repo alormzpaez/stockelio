@@ -87,7 +87,13 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        $order->delete();
+        $message = null;
+
+        if ($order->delete()) {
+            $message = 'Tu carrito ha sido actualizado.';
+        }
+
+        request()->session()->flash('message', $message);
 
         return to_route('carts.show', Auth::user()->cart->id);
     }

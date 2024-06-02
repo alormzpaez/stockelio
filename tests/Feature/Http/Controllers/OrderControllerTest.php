@@ -270,7 +270,8 @@ class OrderControllerTest extends TestCase
         $this->get(route('carts.show', $user->cart->id))->assertOk();
 
         $this->delete(route('orders.destroy', $order->id))
-        ->assertRedirect(route('carts.show', $user->cart->id));
+            ->assertRedirect(route('carts.show', $user->cart->id))
+        ->assertSessionHas('message', 'Tu carrito ha sido actualizado.');
 
         $cart->refresh();
         $this->assertEmpty($cart->orders);
