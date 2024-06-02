@@ -18,7 +18,7 @@ class ProductFactory extends Factory
     {
         return [
             'id' => fake()->unique()->numberBetween(1),
-            'name' => fake()->name(),
+            'name' => fake()->words(2, true),
             'thumbnail_url' => fake()->imageUrl(),
             'description' => fake()->paragraphs(3, true),
         ];
