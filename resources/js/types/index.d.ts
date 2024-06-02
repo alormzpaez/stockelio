@@ -13,6 +13,7 @@ export interface Product {
     cheapest_variant: Variant|null;
     variants_count: number;
     description: string;
+    variants: Variant[];
     created_at: string;
     updated_at: string;
 }
@@ -65,4 +66,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     auth: {
         user: User;
     };
+    flash: {
+        message: string | null;
+    }
 };

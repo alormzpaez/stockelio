@@ -50,6 +50,8 @@ class OrderControllerTest extends TestCase
         $cart->load('orders');
         $variant = Variant::factory()->create();
 
+        $this->get(route('products.show', $variant->product_id))->assertOk();
+
         $this->assertDatabaseEmpty('orders');
         $this->assertEmpty($cart->orders);
 
@@ -60,7 +62,8 @@ class OrderControllerTest extends TestCase
 
         $this->post($this->url, $data)
             ->assertValid()
-        ->assertRedirect(route('products.show', $variant->product_id));
+            ->assertRedirect(route('products.show', $variant->product_id))
+        ->assertSessionHas('message', 'Producto agregado a tu carrito.');
 
         $cart->refresh();
         $this->assertDatabaseCount('orders', 1);
@@ -69,64 +72,84 @@ class OrderControllerTest extends TestCase
 
     public function test_store_invalid(): void
     {
-        Variant::factory()->create();
+        $variant = Variant::factory()->create();
         Sanctum::actingAs(User::factory()->create());
+        
+        $this->get(route('products.show', $variant->product_id))->assertOk();
 
         $data = [];
 
-        $this->post($this->url, $data)->assertInvalid([
-            'variant_id',
-            'quantity',
-        ]);
+        $this->post($this->url, $data)
+            ->assertInvalid([
+                'variant_id',
+                'quantity',
+            ])
+            ->assertRedirect(route('products.show', $variant->product_id))
+        ->assertSessionHasErrors();
 
         $data = [
             'variant_id',
             'quantity',
         ];
 
-        $this->post($this->url, $data)->assertInvalid([
-            'variant_id',
-            'quantity',
-        ]);
+        $this->post($this->url, $data)
+            ->assertInvalid([
+                'variant_id',
+                'quantity',
+            ])
+            ->assertRedirect(route('products.show', $variant->product_id))
+        ->assertSessionHasErrors();
 
         $data = [
             'variant_id' => null,
             'quantity' => null,
         ];
 
-        $this->post($this->url, $data)->assertInvalid([
-            'variant_id',
-            'quantity',
-        ]);
+        $this->post($this->url, $data)
+            ->assertInvalid([
+                'variant_id',
+                'quantity',
+            ])
+            ->assertRedirect(route('products.show', $variant->product_id))
+        ->assertSessionHasErrors();
 
         $data = [
             'variant_id' => '',
             'quantity' => '',
         ];
 
-        $this->post($this->url, $data)->assertInvalid([
-            'variant_id',
-            'quantity',
-        ]);
+        $this->post($this->url, $data)
+            ->assertInvalid([
+                'variant_id',
+                'quantity',
+            ])
+            ->assertRedirect(route('products.show', $variant->product_id))
+        ->assertSessionHasErrors();
 
         $data = [
             'variant_id' => ' ',
             'quantity' => ' ',
         ];
 
-        $this->post($this->url, $data)->assertInvalid([
-            'variant_id',
-            'quantity',
-        ]);
+        $this->post($this->url, $data)
+            ->assertInvalid([
+                'variant_id',
+                'quantity',
+            ])
+            ->assertRedirect(route('products.show', $variant->product_id))
+        ->assertSessionHasErrors();
 
         $data = [
             'variant_id' => 0,
             'quantity' => 0,
         ];
 
-        $this->post($this->url, $data)->assertInvalid([
-            'variant_id',
-            'quantity',
-        ]);
+        $this->post($this->url, $data)
+            ->assertInvalid([
+                'variant_id',
+                'quantity',
+            ])
+            ->assertRedirect(route('products.show', $variant->product_id))
+        ->assertSessionHasErrors();
     }
 }

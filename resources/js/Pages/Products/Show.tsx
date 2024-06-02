@@ -1,18 +1,31 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head, router } from "@inertiajs/react";
-import { PageProps, Product } from "@/types";
-import { Button } from "flowbite-react";
-import { useEffect } from "react";
+import { Head, Link, router, useForm } from "@inertiajs/react";
+import { PageProps, Product, Variant } from "@/types";
+import { Button, Toast, Label, Select } from "flowbite-react";
+import { FormEventHandler, useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { FaCartShopping } from "react-icons/fa6";
+import { HiFire } from "react-icons/hi";
 
 export default function Show({
     auth,
     product,
+    flash,
 }: PageProps<{ product: Product }>) {
-    useEffect(() => {
-        console.log(product);
-    }, []);
+    const [selectedVariant, setSelectedVariant] = useState<Variant | null>(
+        product.cheapest_variant
+    );
+
+    const { data, setData, post, processing, errors } = useForm({
+        variant_id: selectedVariant?.id,
+        quantity: 1,
+    });
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+
+        post(route("orders.store"));
+    };
 
     return (
         <AuthenticatedLayout
@@ -27,6 +40,20 @@ export default function Show({
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    <>
+                        {flash.message ? (
+                            <Toast className="mb-2">
+                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-cyan-100 text-cyan-500 dark:bg-cyan-800 dark:text-cyan-200">
+                                    <HiFire className="w-5 h-5" />
+                                </div>
+                                <div className="ml-3 text-sm font-normal">
+                                    {flash.message}
+                                </div>
+                                <Toast.Toggle />
+                            </Toast>
+                        ) : null}
+                    </>
+
                     <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
                         <div className="p-6 text-4xl font-medium text-gray-900 dark:text-gray-100">
                             <Button
@@ -58,13 +85,9 @@ export default function Show({
                                         <div className="mt-4 sm:items-center sm:gap-4 sm:flex">
                                             <p className="text-2xl font-extrabold text-gray-900 sm:text-3xl dark:text-white">
                                                 <span className="text-base font-normal text-gray-500 sm:text-lg dark:text-gray-400">
-                                                    Desde:&nbsp;
+                                                    A solo:&nbsp;
                                                 </span>
-                                                $
-                                                {
-                                                    product.cheapest_variant
-                                                        ?.retail_price
-                                                }
+                                                ${selectedVariant?.retail_price}
                                             </p>
                                             <div className="flex items-center gap-2 mt-2 sm:mt-0">
                                                 <div className="flex items-center gap-1">
@@ -127,27 +150,179 @@ export default function Show({
                                                 <p className="text-sm font-medium leading-none text-gray-500 dark:text-gray-400">
                                                     (5.0)
                                                 </p>
-                                                <a
-                                                    href="#"
+                                                <Link
+                                                    href={""}
                                                     className="text-sm font-medium leading-none text-gray-900 underline hover:no-underline dark:text-white"
                                                 >
                                                     345 Reviews
-                                                </a>
+                                                </Link>
                                             </div>
                                         </div>
-                                        <div className="mt-6 sm:gap-4 sm:items-center sm:flex sm:mt-8">
-                                            <Button
-                                                color="gray"
-                                                onClick={() => {
-                                                    console.log(
-                                                        "Added to cart"
-                                                    );
-                                                }}
-                                            >
-                                                <FaCartShopping className="mr-2" />
-                                                Agregar a carrito
-                                            </Button>
+                                        <div className="mt-4 sm:items-center sm:gap-4 sm:flex">
+                                            <p className="text-base font-extrabold text-gray-900 dark:text-white">
+                                                <span className="text-base font-normal text-gray-500 dark:text-gray-400">
+                                                    Id de variante:&nbsp;
+                                                </span>
+                                                #{selectedVariant?.id}
+                                            </p>
                                         </div>
+                                        <form onSubmit={submit}>
+                                            <div className="flex flex-col items-stretch gap-2 mt-6 md:items-center xl:flex-row xl:gap-4">
+                                                <div className="md:w-2/3">
+                                                    <div className="block mb-2">
+                                                        <Label
+                                                            className="mb-2"
+                                                            htmlFor="variants"
+                                                            value="Selecciona una variante:"
+                                                        />
+                                                    </div>
+                                                    <Select
+                                                        id="variants"
+                                                        required
+                                                        onChange={(e) => {
+                                                            let variant =
+                                                                product
+                                                                    .variants[
+                                                                    Number(
+                                                                        e
+                                                                            .currentTarget
+                                                                            .value
+                                                                    )
+                                                                ];
+                                                            setData(
+                                                                "variant_id",
+                                                                variant.id
+                                                            );
+                                                            setSelectedVariant(
+                                                                variant
+                                                            );
+                                                        }}
+                                                        defaultValue={product.variants.findIndex(
+                                                            (variant) =>
+                                                                variant.id ==
+                                                                selectedVariant?.id
+                                                        )}
+                                                    >
+                                                        {product.variants.map(
+                                                            (
+                                                                variant,
+                                                                index
+                                                            ) => (
+                                                                <option
+                                                                    value={
+                                                                        index
+                                                                    }
+                                                                    key={index}
+                                                                >
+                                                                    {"#" +
+                                                                        variant.id +
+                                                                        " ($" +
+                                                                        variant.retail_price +
+                                                                        ")"}
+                                                                </option>
+                                                            )
+                                                        )}
+                                                    </Select>
+                                                </div>
+                                                <div className="flex items-center justify-center">
+                                                    <Label
+                                                        htmlFor="variants"
+                                                        value={"Cantidad:"}
+                                                    />
+                                                    &nbsp;
+                                                    <button
+                                                        type="button"
+                                                        id="decrement-button"
+                                                        data-input-counter-decrement="counter-input"
+                                                        className="inline-flex items-center justify-center w-5 h-5 bg-gray-100 border border-gray-300 rounded-md shrink-0 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
+                                                        onClick={() =>
+                                                            data.quantity > 1
+                                                                ? setData(
+                                                                      "quantity",
+                                                                      data.quantity -
+                                                                          1
+                                                                  )
+                                                                : null
+                                                        }
+                                                    >
+                                                        <svg
+                                                            className="h-2.5 w-2.5 text-gray-900 dark:text-white"
+                                                            aria-hidden="true"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 18 2"
+                                                        >
+                                                            <path
+                                                                stroke="currentColor"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M1 1h16"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                    <input
+                                                        type="text"
+                                                        id="counter-input"
+                                                        data-input-counter
+                                                        className="w-10 text-sm font-medium text-center text-gray-900 bg-transparent border-0 shrink-0 focus:outline-none focus:ring-0 dark:text-white"
+                                                        placeholder=""
+                                                        value={data.quantity}
+                                                        required
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        id="increment-button"
+                                                        data-input-counter-increment="counter-input"
+                                                        className="inline-flex items-center justify-center w-5 h-5 bg-gray-100 border border-gray-300 rounded-md shrink-0 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700"
+                                                        onClick={() =>
+                                                            setData(
+                                                                "quantity",
+                                                                data.quantity +
+                                                                    1
+                                                            )
+                                                        }
+                                                    >
+                                                        <svg
+                                                            className="h-2.5 w-2.5 text-gray-900 dark:text-white"
+                                                            aria-hidden="true"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 18 18"
+                                                        >
+                                                            <path
+                                                                stroke="currentColor"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M9 1v16M1 9h16"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <Button
+                                                    type="submit"
+                                                    className="md:w-2/3"
+                                                    color="gray"
+                                                    disabled={processing}
+                                                >
+                                                    <FaCartShopping className="mr-2" />
+                                                    Agregar a carrito
+                                                </Button>
+                                            </div>
+                                            <div className="mt-2 text-sm text-red-600 dark:text-red-500">
+                                                {errors.variant_id && (
+                                                    <span>
+                                                        {errors.variant_id}
+                                                    </span>
+                                                )}
+                                                {errors.quantity && (
+                                                    <span>
+                                                        {errors.quantity}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </form>
                                         <hr className="my-6 border-gray-200 md:my-8 dark:border-gray-700" />
                                         <p className="mb-6 text-gray-500 dark:text-gray-400">
                                             {product.description}

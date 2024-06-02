@@ -84,10 +84,15 @@ class ProductControllerTest extends TestCase
                     ->has('description')
                     ->has('created_at')
                     ->has('updated_at')
-                ->has('cheapest_variant', fn (AssertableInertia $page) =>
-                    $page->has('id') 
-                        ->has('product_id') 
-                    ->has('retail_price') 
+                    ->has('cheapest_variant', fn (AssertableInertia $page) =>
+                        $page->has('id') 
+                            ->has('product_id') 
+                        ->has('retail_price') 
+                    )
+                ->has('variants', 2, fn (AssertableInertia $page) =>
+                    $page->has('id')
+                        ->has('product_id')
+                    ->has('retail_price')
                 )
             )
         );

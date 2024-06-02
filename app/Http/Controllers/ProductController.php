@@ -44,7 +44,10 @@ class ProductController extends Controller
      */
     public function show(Product $product): Response
     {
-        $product->load('cheapestVariant:id,variants.product_id,retail_price');
+        $product->load([
+            'cheapestVariant:id,variants.product_id,retail_price',
+            'variants:id,variants.product_id,retail_price',
+        ]);
 
         return Inertia::render('Products/Show', compact('product'));
     }

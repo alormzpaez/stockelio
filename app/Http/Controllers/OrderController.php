@@ -31,12 +31,20 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        Auth::user()
-            ->cart
-            ->orders()
-        ->create($request->validated());
-
         $variant = Variant::find($request->validated('variant_id'));
+
+        $message = null;
+
+        if (
+            Auth::user()
+                ->cart
+                ->orders()
+            ->create($request->validated())
+        ) {
+            $message = 'Producto agregado a tu carrito.';
+        }
+
+        $request->session()->flash('message', $message);
 
         return to_route('products.show', $variant->product_id);
     }
