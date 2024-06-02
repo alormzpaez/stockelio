@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -51,10 +52,10 @@ class CartController extends Controller
 
         return Inertia::render('Carts/Show', [
             'cart' => [
-                'id' => $cart->id,
-                'user_id' => $cart->user_id,
-                'created_at' => $cart->created_at,
-                'updated_at' => $cart->updated_at,
+                ...Arr::only($cart->toArray(), ['id', 'user_id', 'created_at', 'updated_at']),
+                'total' => $cart->orders->sum(fn ($order) =>
+                    $order->quantity * $order->variant->retail_price
+                ),
                 'orders' => $sortedOrders,
             ]
         ]);

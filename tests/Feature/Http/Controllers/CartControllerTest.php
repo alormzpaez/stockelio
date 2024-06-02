@@ -5,6 +5,7 @@ namespace Tests\Feature\Http\Controllers;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Inertia\Testing\AssertableInertia;
@@ -45,12 +46,24 @@ class CartControllerTest extends TestCase
 
     public function test_show(): void
     {
-        Sanctum::actingAs($user = User::factory()
-            ->has(Cart::factory()->hasOrders(2))
-        ->createQuietly());
+        Sanctum::actingAs($user = User::factory()->create());
 
-        $order1 = Order::first();
-        $order2 = Order::orderByDesc('id')->first();
+        $order1 = Order::factory()
+            ->for($user->cart)
+            ->for(Variant::factory()->state([
+                'retail_price' => 100
+            ]))
+        ->create([
+            'quantity' => 2
+        ]);
+        $order2 = Order::factory()
+            ->for($user->cart)
+            ->for(Variant::factory()->state([
+                'retail_price' => 50
+            ]))
+        ->create([
+            'quantity' => 3
+        ]);
 
         $this->get(route('carts.show', $user->cart->id))
             ->assertOk()
@@ -61,6 +74,7 @@ class CartControllerTest extends TestCase
                     ->has('user_id')
                     ->has('created_at')
                     ->has('updated_at')
+                    ->has('total')
                 ->has('orders', 2, fn (AssertableInertia $page) =>
                     $page->has('id')
                         ->has('status')
@@ -78,6 +92,7 @@ class CartControllerTest extends TestCase
                         )
                     )
                 )
+                ->where('total', 350)
                 ->where('orders.0.id', $order2->id)
                 ->where('orders.1.id', $order1->id)
             )
