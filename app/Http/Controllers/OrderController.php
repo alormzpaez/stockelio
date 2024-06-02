@@ -78,6 +78,8 @@ class OrderController extends Controller
      */
     public function destroy(Order $order)
     {
-        //
+        $order->delete();
+
+        return to_route('carts.show', Auth::user()->cart->id);
     }
 }

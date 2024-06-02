@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers;
 
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Variant;
@@ -21,12 +22,12 @@ class OrderControllerTest extends TestCase
         $order = Order::factory()->create();
 
         $this->get($this->url)->assertMethodNotAllowed(); // index
-        $this->get("{$this->url}/{$order->id}")->assertNotFound(); // show
-        $this->get("{$this->url}/create")->assertNotFound(); // create
+        $this->get("{$this->url}/{$order->id}")->assertMethodNotAllowed(); // show
+        $this->get("{$this->url}/create")->assertMethodNotAllowed(); // create
         $this->post($this->url)->assertRedirect(route('login')); // post
-        $this->get("{$this->url}/edit")->assertNotFound(); // edit
-        $this->put("{$this->url}/{$order->id}")->assertNotFound(); // update
-        $this->delete("{$this->url}/{$order->id}")->assertNotFound(); // destroy
+        $this->get("{$this->url}/edit")->assertMethodNotAllowed(); // edit
+        $this->put("{$this->url}/{$order->id}")->assertMethodNotAllowed(); // update
+        $this->delete("{$this->url}/{$order->id}")->assertRedirect(route('login')); // destroy
     }
 
     public function test_user(): void
@@ -35,12 +36,12 @@ class OrderControllerTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
 
         $this->get($this->url)->assertMethodNotAllowed(); // index
-        $this->get("{$this->url}/{$order->id}")->assertNotFound(); // show
-        $this->get("{$this->url}/create")->assertNotFound(); // create
+        $this->get("{$this->url}/{$order->id}")->assertMethodNotAllowed(); // show
+        $this->get("{$this->url}/create")->assertMethodNotAllowed(); // create
         $this->post($this->url)->assertInvalid(); // post
-        $this->get("{$this->url}/edit")->assertNotFound(); // edit
-        $this->put("{$this->url}/{$order->id}")->assertNotFound(); // update
-        $this->delete("{$this->url}/{$order->id}")->assertNotFound(); // destroy
+        $this->get("{$this->url}/edit")->assertMethodNotAllowed(); // edit
+        $this->put("{$this->url}/{$order->id}")->assertMethodNotAllowed(); // update
+        $this->delete("{$this->url}/{$order->id}")->assertRedirect(); // destroy
     }
 
     public function test_store(): void
@@ -151,5 +152,29 @@ class OrderControllerTest extends TestCase
             ])
             ->assertRedirect(route('products.show', $variant->product_id))
         ->assertSessionHasErrors();
+    }
+
+    public function test_destroy(): void
+    {
+        Sanctum::actingAs($user = User::factory()
+            ->has(Cart::factory()->hasOrders())
+        ->createQuietly());
+
+        $cart = $user->cart;
+        $cart->load('orders');
+
+        $this->assertDatabaseCount('orders', 1);
+        $this->assertNotEmpty($cart->orders);
+
+        $order = Order::first();
+
+        $this->get(route('carts.show', $user->cart->id))->assertOk();
+
+        $this->delete(route('orders.destroy', $order->id))
+        ->assertRedirect(route('carts.show', $user->cart->id));
+
+        $cart->refresh();
+        $this->assertEmpty($cart->orders);
+        $this->assertDatabaseEmpty('orders');
     }
 }
