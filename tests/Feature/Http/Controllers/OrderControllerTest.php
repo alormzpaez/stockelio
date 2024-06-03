@@ -175,7 +175,7 @@ class OrderControllerTest extends TestCase
         $this->put(route('orders.update', $order->id), $data)
             ->assertValid()
             ->assertRedirect(route('carts.show', $user->cart->id))
-        ->assertSessionHas('message', 'Tu carrito ha sido actualizado.');
+        ->assertSessionMissing('message');
 
         $order->refresh();
         $this->assertEquals($order->quantity, 2);

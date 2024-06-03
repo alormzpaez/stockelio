@@ -71,13 +71,7 @@ class OrderController extends Controller
      */
     public function update(UpdateOrderRequest $request, Order $order)
     {
-        $message = null;
-
-        if ($order->update($request->validated())) {
-            $message = 'Tu carrito ha sido actualizado.';
-        }
-
-        $request->session()->flash('message', $message);
+        $order->update($request->validated());
 
         return to_route('carts.show', Auth::user()->cart->id);
     }
