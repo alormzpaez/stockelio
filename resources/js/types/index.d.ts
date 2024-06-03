@@ -39,6 +39,7 @@ export interface Cart {
     user_id: number;
     created_at: string;
     updated_at: string;
+    total: number;
     orders: Order[];
 }
 
