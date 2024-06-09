@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('thumbnail_url');
             $table->text('description');
+            $table->text('stripe_product_id');
             $table->timestamps();
         });
     }

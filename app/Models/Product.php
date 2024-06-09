@@ -13,6 +13,19 @@ class Product extends Model
 
     public $incrementing = false;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'id',
+        'name',
+        'thumbnail_url',
+        'description',
+        'stripe_product_id',
+    ];
+
     public function variants(): HasMany
     {
         return $this->hasMany(Variant::class);

@@ -22,6 +22,7 @@ class VariantFactory extends Factory
             'product_id' => Product::factory(),
             'retail_price' => fake()->randomFloat(2, 1, 1000),
             'currency' => fake()->currencyCode(),
+            'stripe_price_id' => fake()->text(50),
         ];
     }
 }

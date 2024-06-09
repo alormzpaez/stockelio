@@ -21,6 +21,7 @@ class ProductFactory extends Factory
             'name' => fake()->words(2, true),
             'thumbnail_url' => fake()->imageUrl(),
             'description' => fake()->paragraphs(3, true),
+            'stripe_product_id' => fake()->text(50),
         ];
     }
 }

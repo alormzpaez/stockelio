@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignIdFor(Product::class);
             $table->float('retail_price');
             $table->string('currency');
+            $table->string('stripe_price_id');
             $table->timestamps();
         });
     }

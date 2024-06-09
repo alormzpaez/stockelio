@@ -13,6 +13,18 @@ class Variant extends Model
 
     public $incrementing = false;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'id',
+        'retail_price',
+        'currency',
+        'stripe_price_id',
+    ];
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
