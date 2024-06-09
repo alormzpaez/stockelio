@@ -99,13 +99,13 @@
                 "sync_product_id": 71,
                 "name": "Red T-Shirt",
                 "synced": true,
-                "variant_id": 3001,
+                "variant_id": 3002,
                 "retail_price": "39.99",
                 "currency": "USD",
                 "is_ignored": true,
                 "sku": "SKU1234",
                 "product": {
-                    "variant_id": 3001,
+                    "variant_id": 3002,
                     "product_id": 301,
                     "image": "https://files.cdn.printful.com/products/71/5309_1581412541.jpg",
                     "name": "Bella + Canvas 3001 Unisex Short Sleeve Jersey T-Shirt with Tear Away Label (White / 4XL)"

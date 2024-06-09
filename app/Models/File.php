@@ -10,15 +10,12 @@ class File extends Model
 {
     use HasFactory;
 
-    public $increment = false;
-
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'id',
         'type',
         'thumbnail_url',
         'preview_url',
@@ -28,6 +25,7 @@ class File extends Model
         'width',
         'height',
         'dpi',
+        'printful_file_id',
     ];
 
     public function variant(): BelongsTo

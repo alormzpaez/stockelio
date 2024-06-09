@@ -34,12 +34,12 @@ class PrintfulWebhookController extends Controller
                 
                 $product = Product::create([
                     ...Arr::only($productRequest, [
-                        'id',
                         'name',
                         'thumbnail_url',
                     ]),
                     'description' => '',
                     'stripe_product_id' => $response['id'],
+                    'printful_product_id' => $productRequest['id'],
                 ]);
     
                 $response = $this->printfulService->getASyncProduct($product->id);
@@ -54,26 +54,26 @@ class PrintfulWebhookController extends Controller
                     );
     
                     $variant = $product->variants()->create([
-                        ...Arr::only($variantRequest, [
-                            'id',
-                            'currency',
-                        ]),
+                        'currency' => $variantRequest['currency'],
                         'retail_price' => doubleval($variantRequest['retail_price']),
                         'stripe_price_id' => $response['id'],
+                        'printful_variant_id' => $variantRequest['id'],
                     ]);
 
-                    $filesRequest = array_map(fn ($fileRequest) => Arr::only($fileRequest, [
-                        'id',
-                        'type',
-                        'thumbnail_url',
-                        'preview_url',
-                        'filename',
-                        'mime_type',
-                        'size',
-                        'width',
-                        'height',
-                        'dpi',
-                    ]), $variantRequest['files']);
+                    $filesRequest = array_map(fn ($fileRequest) => [
+                        ...Arr::only($fileRequest, [
+                            'type',
+                            'thumbnail_url',
+                            'preview_url',
+                            'filename',
+                            'mime_type',
+                            'size',
+                            'width',
+                            'height',
+                            'dpi',
+                        ]),
+                        'printful_file_id' => $fileRequest['id'],
+                    ], $variantRequest['files']);
 
                     $variant->files()->createMany($filesRequest);
                 }

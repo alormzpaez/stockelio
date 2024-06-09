@@ -18,11 +18,11 @@ class VariantFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => fake()->unique()->numberBetween(1),
             'product_id' => Product::factory(),
             'retail_price' => fake()->randomFloat(2, 1, 1000),
             'currency' => fake()->currencyCode(),
             'stripe_price_id' => fake()->text(50),
+            'printful_variant_id' => fake()->unique()->numberBetween(1),
         ];
     }
 }

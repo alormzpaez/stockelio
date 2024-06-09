@@ -18,7 +18,6 @@ class FileFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => fake()->unique()->numberBetween(1),
             'variant_id' => Variant::factory(),
             'type' => fake()->words(2, true),
             'thumbnail_url' => fake()->imageUrl(),
@@ -29,6 +28,7 @@ class FileFactory extends Factory
             'width' => fake()->numberBetween(1, 1000),
             'height' => fake()->numberBetween(1, 1000),
             'dpi' => fake()->numberBetween(1, 1000),
+            'printful_file_id' => fake()->unique()->numberBetween(1),
         ];
     }
 }

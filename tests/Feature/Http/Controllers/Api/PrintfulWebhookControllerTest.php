@@ -39,6 +39,8 @@ class PrintfulWebhookControllerTest extends TestCase
     /**
      * Stripe price will be the same for all of the variants in this test.
      * That's the reason why all of the variants have the same stripe_price_id.
+     * 
+     * This test also assures that id's from printful and stripe don't mix with internal id's.
      */
     public function test_product_created(): void
     {
@@ -81,37 +83,45 @@ class PrintfulWebhookControllerTest extends TestCase
         $this->assertDatabaseCount('products', 1);
         $this->assertDatabaseHas('products', [
             ...Arr::only($syncProduct, [
-                'id',
                 'name',
                 'thumbnail_url',
             ]),
             'description' => '',
+            'printful_product_id' => $syncProduct['id'],
             'stripe_product_id' => $stripeProductBody['id'],
         ]);
+        $this->assertDatabaseMissing('products', Arr::only($syncProduct, 'id'));
+
         $this->assertDatabaseCount('variants', 2);
         $this->assertDatabaseHas('variants', [
-            ...Arr::only($printfulProductBody['result']['sync_variants'][0], [
-                'id',
-                'currency',
-            ]),
+            'currency' => $printfulProductBody['result']['sync_variants'][0]['currency'],
             'retail_price' => 29.99,
             'product_id' => $product->id,
+            'printful_variant_id' => $printfulProductBody['result']['sync_variants'][0]['id'],
             'stripe_price_id' => $stripePriceBody['id'],
         ]);
         $this->assertDatabaseHas('variants', [
-            ...Arr::only($printfulProductBody['result']['sync_variants'][1], [
-                'id',
-                'currency',
-            ]),
+            'currency' => $printfulProductBody['result']['sync_variants'][1]['currency'],
             'retail_price' => 39.99,
             'product_id' => $product->id,
+            'printful_variant_id' => $printfulProductBody['result']['sync_variants'][1]['id'],
             'stripe_price_id' => $stripePriceBody['id'],
         ]);
+        $this->assertDatabaseMissing('variants', Arr::only(
+            $printfulProductBody['result']['sync_variants'][0], 
+            'id'
+        ));
+        $this->assertDatabaseMissing('variants', Arr::only(
+            $printfulProductBody['result']['sync_variants'][1], 
+            'id'
+        ));
 
         $firstVariant = Variant::where('retail_price', 29.99)->with('files')->first();
-        $arrayFirstFilesIds = $firstVariant->files->map(fn ($file) => $file->id)->toArray();
+        $arrayFirstFilesIds = $firstVariant->files->map(fn ($file) => $file->printful_file_id)->toArray();
         $secondVariant = Variant::where('retail_price', 39.99)->with('files')->first();
-        $arraySecondFilesIds = $secondVariant->files->map(fn ($file) => $file->id)->toArray();
+        $arraySecondFilesIds = $secondVariant->files->map(fn ($file) => $file->printful_file_id)->toArray();
+
+        $mergedFilesIds = array_merge($arrayFirstFilesIds, $arraySecondFilesIds);
 
         $this->assertDatabaseCount('files', 4);
         $this->assertCount(2, $firstVariant->files);
@@ -132,6 +142,10 @@ class PrintfulWebhookControllerTest extends TestCase
             $printfulProductBody['result']['sync_variants'][1]['files'][1]['id'],
             $arraySecondFilesIds,
         );
+        $this->assertNotContains($firstVariant->files->get(0)->id, $mergedFilesIds);
+        $this->assertNotContains($firstVariant->files->get(1)->id, $mergedFilesIds);
+        $this->assertNotContains($secondVariant->files->get(0)->id, $mergedFilesIds);
+        $this->assertNotContains($secondVariant->files->get(1)->id, $mergedFilesIds);
     }
 
     public function test_product_created_with_error_when_post_stripe_product(): void

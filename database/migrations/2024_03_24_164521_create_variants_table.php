@@ -13,10 +13,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('variants', function (Blueprint $table) {
-            $table->unsignedBigInteger('id');
+            $table->id();
             $table->foreignIdFor(Product::class);
             $table->float('retail_price');
             $table->string('currency');
+            $table->unsignedBigInteger('printful_variant_id')->unique();
             $table->string('stripe_price_id');
             $table->timestamps();
         });

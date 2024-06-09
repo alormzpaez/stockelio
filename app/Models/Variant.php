@@ -11,17 +11,15 @@ class Variant extends Model
 {
     use HasFactory;
 
-    public $incrementing = false;
-
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'id',
         'retail_price',
         'currency',
+        'printful_variant_id',
         'stripe_price_id',
     ];
 

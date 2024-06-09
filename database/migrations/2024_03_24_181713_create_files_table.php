@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('files', function (Blueprint $table) {
-            $table->unsignedBigInteger('id');
+            $table->id();
             $table->foreignIdFor(Variant::class);
             $table->string('type');
             $table->text('thumbnail_url');
@@ -24,6 +24,7 @@ return new class extends Migration
             $table->integer('width');
             $table->integer('height');
             $table->smallInteger('dpi');
+            $table->unsignedBigInteger('printful_file_id')->unique();
             $table->timestamps();
         });
     }

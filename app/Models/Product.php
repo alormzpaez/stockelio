@@ -11,18 +11,16 @@ class Product extends Model
 {
     use HasFactory;
 
-    public $incrementing = false;
-
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'id',
         'name',
         'thumbnail_url',
         'description',
+        'printful_product_id',
         'stripe_product_id',
     ];
 
