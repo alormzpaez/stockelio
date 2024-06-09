@@ -12,6 +12,24 @@ class File extends Model
 
     public $increment = false;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'id',
+        'type',
+        'thumbnail_url',
+        'preview_url',
+        'filename',
+        'mime_type',
+        'size',
+        'width',
+        'height',
+        'dpi',
+    ];
+
     public function variant(): BelongsTo
     {
         return $this->belongsTo(Variant::class);

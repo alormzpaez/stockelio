@@ -53,7 +53,7 @@ class PrintfulWebhookController extends Controller
                         $product->stripe_product_id,
                     );
     
-                    $product->variants()->create([
+                    $variant = $product->variants()->create([
                         ...Arr::only($variantRequest, [
                             'id',
                             'currency',
@@ -61,6 +61,21 @@ class PrintfulWebhookController extends Controller
                         'retail_price' => doubleval($variantRequest['retail_price']),
                         'stripe_price_id' => $response['id'],
                     ]);
+
+                    $filesRequest = array_map(fn ($fileRequest) => Arr::only($fileRequest, [
+                        'id',
+                        'type',
+                        'thumbnail_url',
+                        'preview_url',
+                        'filename',
+                        'mime_type',
+                        'size',
+                        'width',
+                        'height',
+                        'dpi',
+                    ]), $variantRequest['files']);
+
+                    $variant->files()->createMany($filesRequest);
                 }
             }
         } catch (\Exception $e) {

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Models\Product;
+use App\Models\Variant;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -35,6 +36,10 @@ class PrintfulWebhookControllerTest extends TestCase
         $this->deleteJson("{$this->endpoint}/1")->assertNotFound(); // destroy
     }
 
+    /**
+     * Stripe price will be the same for all of the variants in this test.
+     * That's the reason why all of the variants have the same stripe_price_id.
+     */
     public function test_product_created(): void
     {
         $printfulProductBody = json_decode(file_get_contents(base_path('tests/Fixtures/Printful/GetASyncProductOkResponse.json')), true);
@@ -83,7 +88,7 @@ class PrintfulWebhookControllerTest extends TestCase
             'description' => '',
             'stripe_product_id' => $stripeProductBody['id'],
         ]);
-        $this->assertDatabaseCount('variants', 1);
+        $this->assertDatabaseCount('variants', 2);
         $this->assertDatabaseHas('variants', [
             ...Arr::only($printfulProductBody['result']['sync_variants'][0], [
                 'id',
@@ -93,6 +98,40 @@ class PrintfulWebhookControllerTest extends TestCase
             'product_id' => $product->id,
             'stripe_price_id' => $stripePriceBody['id'],
         ]);
+        $this->assertDatabaseHas('variants', [
+            ...Arr::only($printfulProductBody['result']['sync_variants'][1], [
+                'id',
+                'currency',
+            ]),
+            'retail_price' => 39.99,
+            'product_id' => $product->id,
+            'stripe_price_id' => $stripePriceBody['id'],
+        ]);
+
+        $firstVariant = Variant::where('retail_price', 29.99)->with('files')->first();
+        $arrayFirstFilesIds = $firstVariant->files->map(fn ($file) => $file->id)->toArray();
+        $secondVariant = Variant::where('retail_price', 39.99)->with('files')->first();
+        $arraySecondFilesIds = $secondVariant->files->map(fn ($file) => $file->id)->toArray();
+
+        $this->assertDatabaseCount('files', 4);
+        $this->assertCount(2, $firstVariant->files);
+        $this->assertContains(
+            $printfulProductBody['result']['sync_variants'][0]['files'][0]['id'],
+            $arrayFirstFilesIds,
+        );
+        $this->assertContains(
+            $printfulProductBody['result']['sync_variants'][0]['files'][1]['id'],
+            $arrayFirstFilesIds,
+        );
+        $this->assertCount(2, $secondVariant->files);
+        $this->assertContains(
+            $printfulProductBody['result']['sync_variants'][1]['files'][0]['id'],
+            $arraySecondFilesIds,
+        );
+        $this->assertContains(
+            $printfulProductBody['result']['sync_variants'][1]['files'][1]['id'],
+            $arraySecondFilesIds,
+        );
     }
 
     public function test_product_created_with_error_when_post_stripe_product(): void

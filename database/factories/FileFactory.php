@@ -20,14 +20,15 @@ class FileFactory extends Factory
         return [
             'id' => fake()->unique()->numberBetween(1),
             'variant_id' => Variant::factory(),
-            'url' => fake()->url(),
+            'type' => fake()->words(2, true),
+            'thumbnail_url' => fake()->imageUrl(),
+            'preview_url' => fake()->imageUrl(),
             'filename' => fake()->name(),
             'mime_type' => fake()->mimeType(),
             'size' => fake()->numberBetween(1, 1000),
             'width' => fake()->numberBetween(1, 1000),
             'height' => fake()->numberBetween(1, 1000),
             'dpi' => fake()->numberBetween(1, 1000),
-            'stitch_count_tier' => fake()->word(),
         ];
     }
 }

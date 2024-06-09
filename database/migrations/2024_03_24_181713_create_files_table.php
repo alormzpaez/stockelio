@@ -15,14 +15,15 @@ return new class extends Migration
         Schema::create('files', function (Blueprint $table) {
             $table->unsignedBigInteger('id');
             $table->foreignIdFor(Variant::class);
-            $table->text('url');
+            $table->string('type');
+            $table->text('thumbnail_url');
+            $table->text('preview_url');
             $table->text('filename');
             $table->string('mime_type');
             $table->integer('size');
             $table->integer('width');
             $table->integer('height');
             $table->smallInteger('dpi');
-            $table->string('stitch_count_tier');
             $table->timestamps();
         });
     }
