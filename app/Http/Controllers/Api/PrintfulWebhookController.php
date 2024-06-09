@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\PrintfulWebhookRequest;
 use App\Models\Product;
 use App\Services\PrintfulService;
@@ -9,7 +10,6 @@ use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 
 class PrintfulWebhookController extends Controller
 {

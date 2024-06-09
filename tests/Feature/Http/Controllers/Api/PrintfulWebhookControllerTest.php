@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Http\Controllers;
+namespace Tests\Feature\Http\Controllers\Api;
 
 use App\Models\Product;
 use Carbon\Carbon;
@@ -14,7 +14,7 @@ class PrintfulWebhookControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    private string $endpoint = 'printful/webhook';
+    private string $endpoint = 'api/printful/webhook';
 
     public function setUp(): void
     {

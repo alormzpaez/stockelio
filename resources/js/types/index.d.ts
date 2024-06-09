@@ -9,7 +9,7 @@ export interface User {
 export interface Product {
     id: number;
     name: string;
-    thumbnail_url: string;
+    thumbnail_url: string|null;
     cheapest_variant: Variant|null;
     variants_count: number;
     description: string;

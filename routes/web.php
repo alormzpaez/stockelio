@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\PrintfulWebhookController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -36,6 +35,3 @@ Route::middleware('auth')->group(function () {
     Route::resource('carts', CartController::class)->only(['show']);
     Route::resource('orders', OrderController::class)->only(['store', 'destroy', 'update']);
 });
-
-// Webhook routes
-Route::post('printful/webhook', PrintfulWebhookController::class);
