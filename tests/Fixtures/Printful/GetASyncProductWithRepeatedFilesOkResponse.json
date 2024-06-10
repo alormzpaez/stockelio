@@ -112,7 +112,7 @@
                 },
                 "files": [
                     {
-                        "id": 710033075,
+                        "id": 710037499,
                         "type": "default",
                         "url": "​https://www.example.com/files/tshirts/example.png",
                         "options": [
@@ -127,14 +127,14 @@
                         "size": 45582633,
                         "width": 1000,
                         "height": 1000,
-                        "dpi": 300,
+                        "dpi": null,
                         "status": "ok",
                         "created": 1590051937,
                         "thumbnail_url": "https://files.cdn.printful.com/files/ea4/ea44330b887dfec278dbc4626a759547_thumb.png",
                         "preview_url": "https://files.cdn.printful.com/files/ea4/ea44330b887dfec278dbc4626a759547_thumb.png",
                         "visible": true,
                         "is_temporary": false,
-                        "stitch_count_tier": "stitch_tier_1"
+                        "stitch_count_tier": null
                     },
                     {
                         "id": 710033078,

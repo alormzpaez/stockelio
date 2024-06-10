@@ -45,7 +45,7 @@ class PrintfulWebhookController extends Controller
                         'printful_product_id' => $productRequest['id'],
                     ]);
 
-                    $response = $this->printfulService->getASyncProduct($product->id);
+                    $response = $this->printfulService->getASyncProduct($product->printful_product_id);
 
                     $variantsRequest = $response['result']['sync_variants'];
 

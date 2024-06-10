@@ -27,7 +27,6 @@ class FileFactory extends Factory
             'size' => fake()->numberBetween(1, 1000),
             'width' => fake()->numberBetween(1, 1000),
             'height' => fake()->numberBetween(1, 1000),
-            'dpi' => fake()->numberBetween(1, 1000),
             'printful_file_id' => fake()->unique()->numberBetween(1),
         ];
     }

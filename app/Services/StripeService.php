@@ -19,7 +19,7 @@ class StripeService
         ]);
 
         if ($response->status() != 200) {
-            throw new \Exception('Error in external api.');
+            throw new \Exception('Error creating product in stripe.');
         }
 
         return $response->json();
@@ -39,7 +39,7 @@ class StripeService
         ]);
 
         if ($response->status() != 200) {
-            throw new \Exception('Error in external api.');
+            throw new \Exception('Error creating price in stripe.');
         }
 
         return $response->json();

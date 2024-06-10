@@ -23,8 +23,8 @@ return new class extends Migration
             $table->integer('size');
             $table->integer('width');
             $table->integer('height');
-            $table->smallInteger('dpi');
-            $table->unsignedBigInteger('printful_file_id')->unique();
+            $table->smallInteger('dpi')->nullable();
+            $table->unsignedBigInteger('printful_file_id');
             $table->timestamps();
         });
     }
