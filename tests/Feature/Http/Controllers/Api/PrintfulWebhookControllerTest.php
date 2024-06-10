@@ -148,6 +148,65 @@ class PrintfulWebhookControllerTest extends TestCase
         $this->assertNotContains($secondVariant->files->get(1)->id, $mergedFilesIds);
     }
 
+    /**
+     * First, product is created. Then, Printful sends one more 'product_updated' request due to thumbnail_url of product changed (from null to some valid url). 
+     * So, this test comprobates system doesn't create the product (and relationships) twice.
+     */
+    public function test_product_updated_thumbnail_url(): void
+    {
+        $printfulProductBody = json_decode(file_get_contents(base_path('tests/Fixtures/Printful/GetASyncProductOkResponse.json')), true);
+        $stripeProductBody = json_decode(file_get_contents(base_path('tests/Fixtures/Stripe/CreateAProductOkResponse.json')), true);
+        $stripePriceBody = json_decode(file_get_contents(base_path('tests/Fixtures/Stripe/CreateAPriceOkResponse.json')), true);
+
+        Http::fake([
+            'https://api.printful.com/store/products/*' => Http::response($printfulProductBody, 200),
+            'https://api.stripe.com/v1/products' => Http::response($stripeProductBody, 200),
+            'https://api.stripe.com/v1/prices' => Http::response($stripePriceBody, 200),
+        ]);
+
+        $this->assertDatabaseEmpty('products');
+        $this->assertDatabaseEmpty('variants');
+
+        // Printful brings this data
+        $data = [
+            'type' => 'product_updated',
+            'created' => 1622456737,
+            'retries' => 2,
+            'store' => 12,
+            'data' => [
+                'sync_product' => $syncProduct = [
+                    'id' => 346388995,
+                    'external_id' => '4235234213',
+                    'name' => 'T-shirt',
+                    'variants' => 10,
+                    'synced' => 10,
+                    'thumbnail_url' => null,
+                    'is_ignored' => true,
+                ]
+            ],
+        ];
+
+        $this->postJson($this->endpoint, $data)->assertOk();
+
+        $this->assertDatabaseCount('products', 1);
+        $this->assertDatabaseHas('products', [
+            'thumbnail_url' => null,
+        ]);
+        $this->assertDatabaseCount('variants', 2);
+        $this->assertDatabaseCount('files', 4);
+
+        $data['data']['sync_product']['thumbnail_url'] = '​https://your-domain.com/path/to/image.png';
+
+        $this->postJson($this->endpoint, $data)->assertOk();
+
+        $this->assertDatabaseCount('products', 1);
+        $this->assertDatabaseHas('products', [
+            'thumbnail_url' => '​https://your-domain.com/path/to/image.png',
+        ]);
+        $this->assertDatabaseCount('variants', 2);
+        $this->assertDatabaseCount('files', 4);
+    }
+
     public function test_product_created_with_error_when_post_stripe_product(): void
     {
         $printfulProductBody = json_decode(file_get_contents(base_path('tests/Fixtures/Printful/GetASyncProductOkResponse.json')), true);

@@ -16,8 +16,8 @@ class PrintfulWebhookController extends Controller
     public function __construct(
         private StripeService $stripeService,
         private PrintfulService $printfulService,
-    )
-    {}
+    ) {
+    }
 
     /**
      * Handle the incoming request.
@@ -29,53 +29,60 @@ class PrintfulWebhookController extends Controller
         try {
             if ($request->validated('type') == 'product_updated') {
                 $productRequest = $request->validated('data')['sync_product'];
-    
-                $response = $this->stripeService->createAProduct($productRequest['name']);
-                
-                $product = Product::create([
-                    ...Arr::only($productRequest, [
-                        'name',
-                        'thumbnail_url',
-                    ]),
-                    'description' => '',
-                    'stripe_product_id' => $response['id'],
-                    'printful_product_id' => $productRequest['id'],
-                ]);
-    
-                $response = $this->printfulService->getASyncProduct($product->id);
-                
-                $variantsRequest = $response['result']['sync_variants'];
-    
-                foreach ($variantsRequest as $variantRequest) {
-                    $response = $this->stripeService->createAPrice(
-                        $variantRequest['currency'],
-                        intval(doubleval($variantRequest['retail_price']) * 100),
-                        $product->stripe_product_id,
-                    );
-    
-                    $variant = $product->variants()->create([
-                        'currency' => $variantRequest['currency'],
-                        'retail_price' => doubleval($variantRequest['retail_price']),
-                        'stripe_price_id' => $response['id'],
-                        'printful_variant_id' => $variantRequest['id'],
+
+                if (!(
+                    $product = Product::where('printful_product_id', $productRequest['id'])->first()
+                )) {
+                    $response = $this->stripeService->createAProduct($productRequest['name']);
+
+                    $product = Product::create([
+                        ...Arr::only($productRequest, [
+                            'name',
+                            'thumbnail_url',
+                        ]),
+                        'description' => '',
+                        'stripe_product_id' => $response['id'],
+                        'printful_product_id' => $productRequest['id'],
                     ]);
 
-                    $filesRequest = array_map(fn ($fileRequest) => [
-                        ...Arr::only($fileRequest, [
-                            'type',
-                            'thumbnail_url',
-                            'preview_url',
-                            'filename',
-                            'mime_type',
-                            'size',
-                            'width',
-                            'height',
-                            'dpi',
-                        ]),
-                        'printful_file_id' => $fileRequest['id'],
-                    ], $variantRequest['files']);
+                    $response = $this->printfulService->getASyncProduct($product->id);
 
-                    $variant->files()->createMany($filesRequest);
+                    $variantsRequest = $response['result']['sync_variants'];
+
+                    foreach ($variantsRequest as $variantRequest) {
+                        $response = $this->stripeService->createAPrice(
+                            $variantRequest['currency'],
+                            intval(doubleval($variantRequest['retail_price']) * 100),
+                            $product->stripe_product_id,
+                        );
+
+                        $variant = $product->variants()->create([
+                            'currency' => $variantRequest['currency'],
+                            'retail_price' => doubleval($variantRequest['retail_price']),
+                            'stripe_price_id' => $response['id'],
+                            'printful_variant_id' => $variantRequest['id'],
+                        ]);
+
+                        $filesRequest = array_map(fn ($fileRequest) => [
+                            ...Arr::only($fileRequest, [
+                                'type',
+                                'thumbnail_url',
+                                'preview_url',
+                                'filename',
+                                'mime_type',
+                                'size',
+                                'width',
+                                'height',
+                                'dpi',
+                            ]),
+                            'printful_file_id' => $fileRequest['id'],
+                        ], $variantRequest['files']);
+
+                        $variant->files()->createMany($filesRequest);
+                    }
+                } else {
+                    // Just update the new data for the product
+                    $product->update(Arr::only($productRequest, 'thumbnail_url'));
                 }
             }
         } catch (\Exception $e) {
@@ -87,7 +94,7 @@ class PrintfulWebhookController extends Controller
         }
 
         DB::commit();
-        
+
         return response()->noContent(200);
     }
 }
