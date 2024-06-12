@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Variant extends Model
 {
@@ -28,9 +29,9 @@ class Variant extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function files(): HasMany
+    public function files(): MorphMany
     {
-        return $this->hasMany(File::class);
+        return $this->morphMany(File::class, 'fileable');
     }
 
     public function orders(): HasMany

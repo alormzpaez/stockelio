@@ -2,8 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Product;
 use App\Models\Variant;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Arr;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\File>
@@ -17,8 +19,19 @@ class FileFactory extends Factory
      */
     public function definition(): array
     {
+        $fileableType = Arr::random([
+            Product::class,
+            Variant::class,
+        ]);
+
+        $fileableId = ($fileableType == Product::class) ?
+            Product::factory()
+        :
+            Variant::factory();
+
         return [
-            'variant_id' => Variant::factory(),
+            'fileable_type' => $fileableType,
+            'fileable_id' => $fileableId,
             'type' => fake()->words(2, true),
             'thumbnail_url' => fake()->imageUrl(),
             'preview_url' => fake()->imageUrl(),
