@@ -35,8 +35,8 @@ class Product extends Model
         return $this->variants()->one()->ofMany('retail_price', 'min');
     }
 
-    public function files(): MorphMany
+    public function files(): HasMany
     {
-        return $this->morphMany(File::class, 'fileable');
+        return $this->hasMany(File::class);
     }
 }

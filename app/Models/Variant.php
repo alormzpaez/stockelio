@@ -29,11 +29,6 @@ class Variant extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function files(): MorphMany
-    {
-        return $this->morphMany(File::class, 'fileable');
-    }
-
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);

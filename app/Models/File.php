@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class File extends Model
 {
@@ -17,16 +16,9 @@ class File extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'type',
-        'thumbnail_url',
-        'preview_url',
         'filename',
         'mime_type',
         'size',
-        'width',
-        'height',
-        'dpi',
-        'printful_file_id',
     ];
 
     public function variant(): BelongsTo
@@ -34,11 +26,8 @@ class File extends Model
         return $this->belongsTo(Variant::class);
     }
 
-    /**
-     * Get parent of model (product or variant).
-     */
-    public function fileable(): MorphTo
+    public function product(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(Product::class);
     }
 }

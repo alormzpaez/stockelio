@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\File;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Variant;
@@ -21,12 +20,11 @@ class VariantTest extends TestCase
         $this->assertInstanceOf(Product::class, $variant->product);
     }
 
-    public function test_has_many_files(): void
+    public function test_doesnt_have_many_files(): void
     {
-        $variant = Variant::factory()->hasFiles()->create();
+        $variant = Variant::factory()->create();
 
-        $this->assertInstanceOf(Collection::class, $variant->files);
-        $this->assertInstanceOf(File::class, $variant->files->get(0));
+        $this->assertNull($variant->files);
     }
 
     public function test_has_many_orders(): void
