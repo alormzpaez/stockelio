@@ -116,36 +116,7 @@ class PrintfulWebhookControllerTest extends TestCase
             'id'
         ));
 
-        $firstVariant = Variant::where('retail_price', 29.99)->with('files')->first();
-        $arrayFirstFilesIds = $firstVariant->files->map(fn ($file) => $file->printful_file_id)->toArray();
-        $secondVariant = Variant::where('retail_price', 39.99)->with('files')->first();
-        $arraySecondFilesIds = $secondVariant->files->map(fn ($file) => $file->printful_file_id)->toArray();
-
-        $mergedFilesIds = array_merge($arrayFirstFilesIds, $arraySecondFilesIds);
-
-        $this->assertDatabaseCount('files', 4);
-        $this->assertCount(2, $firstVariant->files);
-        $this->assertContains(
-            $printfulProductBody['result']['sync_variants'][0]['files'][0]['id'],
-            $arrayFirstFilesIds,
-        );
-        $this->assertContains(
-            $printfulProductBody['result']['sync_variants'][0]['files'][1]['id'],
-            $arrayFirstFilesIds,
-        );
-        $this->assertCount(2, $secondVariant->files);
-        $this->assertContains(
-            $printfulProductBody['result']['sync_variants'][1]['files'][0]['id'],
-            $arraySecondFilesIds,
-        );
-        $this->assertContains(
-            $printfulProductBody['result']['sync_variants'][1]['files'][1]['id'],
-            $arraySecondFilesIds,
-        );
-        $this->assertNotContains($firstVariant->files->get(0)->id, $mergedFilesIds);
-        $this->assertNotContains($firstVariant->files->get(1)->id, $mergedFilesIds);
-        $this->assertNotContains($secondVariant->files->get(0)->id, $mergedFilesIds);
-        $this->assertNotContains($secondVariant->files->get(1)->id, $mergedFilesIds);
+        $this->assertDatabaseEmpty('files');
     }
 
     public function test_product_created_with_repeated_files(): void
@@ -221,37 +192,7 @@ class PrintfulWebhookControllerTest extends TestCase
             $printfulProductBody['result']['sync_variants'][1], 
             'id'
         ));
-
-        $firstVariant = Variant::where('retail_price', 29.99)->with('files')->first();
-        $arrayFirstFilesIds = $firstVariant->files->map(fn ($file) => $file->printful_file_id)->toArray();
-        $secondVariant = Variant::where('retail_price', 39.99)->with('files')->first();
-        $arraySecondFilesIds = $secondVariant->files->map(fn ($file) => $file->printful_file_id)->toArray();
-
-        $mergedFilesIds = array_merge($arrayFirstFilesIds, $arraySecondFilesIds);
-
-        $this->assertDatabaseCount('files', 4);
-        $this->assertCount(2, $firstVariant->files);
-        $this->assertContains(
-            $printfulProductBody['result']['sync_variants'][0]['files'][0]['id'],
-            $arrayFirstFilesIds,
-        );
-        $this->assertContains(
-            $printfulProductBody['result']['sync_variants'][0]['files'][1]['id'],
-            $arrayFirstFilesIds,
-        );
-        $this->assertCount(2, $secondVariant->files);
-        $this->assertContains(
-            $printfulProductBody['result']['sync_variants'][1]['files'][0]['id'],
-            $arraySecondFilesIds,
-        );
-        $this->assertContains(
-            $printfulProductBody['result']['sync_variants'][1]['files'][1]['id'],
-            $arraySecondFilesIds,
-        );
-        $this->assertNotContains($firstVariant->files->get(0)->id, $mergedFilesIds);
-        $this->assertNotContains($firstVariant->files->get(1)->id, $mergedFilesIds);
-        $this->assertNotContains($secondVariant->files->get(0)->id, $mergedFilesIds);
-        $this->assertNotContains($secondVariant->files->get(1)->id, $mergedFilesIds);
+        $this->assertDatabaseEmpty('files');
     }
 
     /**
@@ -299,7 +240,7 @@ class PrintfulWebhookControllerTest extends TestCase
             'thumbnail_url' => null,
         ]);
         $this->assertDatabaseCount('variants', 2);
-        $this->assertDatabaseCount('files', 4);
+        $this->assertDatabaseEmpty('files');
 
         $data['data']['sync_product']['thumbnail_url'] = '​https://your-domain.com/path/to/image.png';
 
@@ -310,7 +251,7 @@ class PrintfulWebhookControllerTest extends TestCase
             'thumbnail_url' => '​https://your-domain.com/path/to/image.png',
         ]);
         $this->assertDatabaseCount('variants', 2);
-        $this->assertDatabaseCount('files', 4);
+        $this->assertDatabaseEmpty('files');
     }
 
     public function test_product_created_with_error_when_post_stripe_product(): void

@@ -56,29 +56,12 @@ class PrintfulWebhookController extends Controller
                             $product->stripe_product_id,
                         );
 
-                        $variant = $product->variants()->create([
+                        $product->variants()->create([
                             'currency' => $variantRequest['currency'],
                             'retail_price' => doubleval($variantRequest['retail_price']),
                             'stripe_price_id' => $response['id'],
                             'printful_variant_id' => $variantRequest['id'],
                         ]);
-
-                        $filesRequest = array_map(fn ($fileRequest) => [
-                            ...Arr::only($fileRequest, [
-                                'type',
-                                'thumbnail_url',
-                                'preview_url',
-                                'filename',
-                                'mime_type',
-                                'size',
-                                'width',
-                                'height',
-                                'dpi',
-                            ]),
-                            'printful_file_id' => $fileRequest['id'],
-                        ], $variantRequest['files']);
-
-                        $variant->files()->createMany($filesRequest);
                     }
                 } else {
                     // Just update the new data for the product

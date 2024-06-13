@@ -4,8 +4,11 @@ namespace Tests\Feature\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Sanctum\Sanctum;
@@ -25,8 +28,8 @@ class ProductControllerTest extends TestCase
         $this->get("{$this->url}/{$product->id}")->assertRedirect(route('login')); // show
         $this->get("{$this->url}/create")->assertRedirect(route('login')); // create
         $this->post($this->url)->assertMethodNotAllowed(); // post
-        $this->get("{$this->url}/edit")->assertRedirect(route('login')); // edit
-        $this->put("{$this->url}/{$product->id}")->assertMethodNotAllowed(); // update
+        $this->get("{$this->url}/{$product->id}/edit")->assertRedirect(route('login')); // edit
+        $this->put("{$this->url}/{$product->id}")->assertRedirect(route('login')); // update
         $this->delete("{$this->url}/{$product->id}")->assertMethodNotAllowed(); // destroy
     }
 
@@ -39,8 +42,8 @@ class ProductControllerTest extends TestCase
         $this->get("{$this->url}/{$product->id}")->assertOk(); // show
         $this->get("{$this->url}/create")->assertNotFound(); // create
         $this->post($this->url)->assertMethodNotAllowed(); // post
-        $this->get("{$this->url}/edit")->assertNotFound(); // edit
-        $this->put("{$this->url}/{$product->id}")->assertMethodNotAllowed(); // update
+        $this->get("{$this->url}/{$product->id}/edit")->assertOk(); // edit
+        $this->put("{$this->url}/{$product->id}")->assertInvalid(); // update
         $this->delete("{$this->url}/{$product->id}")->assertMethodNotAllowed(); // destroy
     }
 
@@ -98,5 +101,188 @@ class ProductControllerTest extends TestCase
                 )
             )
         );
+    }
+
+    public function test_edit(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+        $product = Product::factory()
+            ->hasVariants(2)
+            ->hasFiles(2)
+        ->create();
+
+        $this->get(route('products.edit', $product->id))
+            ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) =>
+            $page->component('Products/Edit')
+            ->has('product', fn (AssertableInertia $page) =>
+                $page->has('id')
+                    ->has('name')
+                    ->has('thumbnail_url')
+                    ->has('description')
+                    ->has('created_at')
+                    ->has('updated_at')
+                    ->has('variants_count')
+                    ->has('files', 2, fn (AssertableInertia $page) =>
+                        $page->has('id')
+                        ->has('product_id')
+                    )
+                ->where('variants_count', 2)
+            )
+        );
+    }
+
+    public function test_update(): void
+    {
+        Carbon::setTestNow();
+        Storage::fake('products');
+        
+        Sanctum::actingAs(User::factory()->create());
+        $product = Product::factory()->create();
+        
+        $this->travelTo($now = now()->addMinute());
+
+        $data = [
+            'description' => 'Some text here...',
+            'files' => [
+                UploadedFile::fake()->image('image1.jpg'),
+                UploadedFile::fake()->image('image2.jpg'),
+            ]
+        ];
+
+        $this->put(route('products.update', $product->id), $data)
+            ->assertValid()
+            ->assertRedirect(route('products.edit', $product->id))
+        ->assertSessionHas('message', 'El producto ha sido actualizado.');
+
+        $product->load('files');
+        $product->refresh();
+
+        $this->assertEquals($product->description, $data['description']);
+        $this->assertEquals($product->updated_at, $now->toDateTimeString());
+        $this->assertCount(2, $product->files);
+        $this->assertTrue(Storage::disk('products')->exists($product->files->get(0)->filename));
+        $this->assertTrue(Storage::disk('products')->exists($product->files->get(1)->filename));
+    }
+
+    public function test_update_invalid(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+        $product = Product::factory()->create();
+
+        $this->get(route('products.edit', $product->id))->assertOk();
+
+        $data = [];
+
+        $this->put(route('products.update', $product->id), $data)
+            ->assertInvalid([
+                'description',
+                'files',
+            ])
+            ->assertRedirect(route('products.edit', $product->id))
+        ->assertSessionHasErrors();
+
+        $data = [
+            'description',
+            'files',
+        ];
+
+        $this->put(route('products.update', $product->id), $data)
+            ->assertInvalid([
+                'description',
+                'files',
+            ])
+            ->assertRedirect(route('products.edit', $product->id))
+        ->assertSessionHasErrors();
+
+        $data = [
+            'description' => null,
+            'files' => null,
+        ];
+
+        $this->put(route('products.update', $product->id), $data)
+            ->assertInvalid([
+                'description',
+                'files',
+            ])
+            ->assertRedirect(route('products.edit', $product->id))
+        ->assertSessionHasErrors();
+
+        $data = [
+            'description' => '',
+            'files' => [
+                UploadedFile::fake()->create('file.pdf', mimeType: 'application/pdf'),
+            ]
+        ];
+
+        $this->put(route('products.update', $product->id), $data)
+            ->assertInvalid([
+                'description',
+                'files.0',
+            ])
+            ->assertRedirect(route('products.edit', $product->id))
+        ->assertSessionHasErrors();
+    }
+
+    public function test_update_with_empty_files(): void
+    {
+        Carbon::setTestNow();
+        Storage::fake('products');
+
+        Sanctum::actingAs(User::factory()->create());
+        $product = Product::factory()->create();
+
+        $this->travelTo($now = now()->addMinute());
+
+        $data = [
+            'description' => 'Some text here...',
+            'files' => []
+        ];
+
+        $this->put(route('products.update', $product->id), $data)
+            ->assertValid()
+            ->assertRedirect(route('products.edit', $product->id))
+        ->assertSessionHas('message', 'El producto ha sido actualizado.');
+
+        $product->refresh();
+
+        $this->assertEquals($product->description, $data['description']);
+        $this->assertEquals($product->updated_at, $now->toDateTimeString());
+        $this->assertDatabaseEmpty('files');
+    }
+
+    public function test_update_with_same_description_and_new_files(): void
+    {
+        Carbon::setTestNow();
+        Storage::fake('products');
+        
+        Sanctum::actingAs(User::factory()->create());
+        $product = Product::factory()->create([
+            'description' => $description = 'Some text here...',
+        ]);
+        
+        $this->travelTo($now = now()->addMinute());
+
+        $data = [
+            'description' => $description,
+            'files' => [
+                UploadedFile::fake()->image('image1.jpg'),
+                UploadedFile::fake()->image('image2.jpg'),
+            ]
+        ];
+
+        $this->put(route('products.update', $product->id), $data)
+            ->assertValid()
+            ->assertRedirect(route('products.edit', $product->id))
+        ->assertSessionHas('message', 'El producto ha sido actualizado.');
+
+        $product->load('files');
+        $product->refresh();
+
+        $this->assertEquals($product->description, $data['description']);
+        $this->assertEquals($product->updated_at, $now->toDateTimeString());
+        $this->assertCount(2, $product->files);
+        $this->assertTrue(Storage::disk('products')->exists($product->files->get(0)->filename));
+        $this->assertTrue(Storage::disk('products')->exists($product->files->get(1)->filename));
     }
 }

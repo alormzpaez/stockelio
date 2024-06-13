@@ -2,13 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
+use App\Services\FileService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        private FileService $fileService,
+    ) {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -55,17 +63,45 @@ class ProductController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Product $product)
+    public function edit(Product $product): Response
     {
-        //
+        $product->loadCount('variants');
+        $product->load('files:id,product_id');
+
+        return Inertia::render('Products/Edit', [
+            'product' => [
+                ...Arr::only($product->toArray(), [
+                    'id',
+                    'name',
+                    'thumbnail_url',
+                    'description',
+                    'variants_count',
+                    'files',
+                ]),
+                'created_at' => $product->created_at->diffForHumans(),
+                'updated_at' => $product->updated_at->diffForHumans(),
+            ]
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(UpdateProductRequest $request, Product $product)
     {
-        //
+        $product->update($request->only('description'));
+
+        foreach ($request->validated('files') as $file) {
+            $this->fileService->save($product->id, $file);
+        }
+
+        if (count($request->validated('files')) > 0) {
+            $product->touch();
+        }
+
+        $request->session()->flash('message', 'El producto ha sido actualizado.');
+
+        return to_route('products.edit', $product->id);
     }
 
     /**
