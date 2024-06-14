@@ -19,7 +19,7 @@ class FileFactory extends Factory
     {
         return [
             'product_id' => Product::factory(),
-            'filename' => fake()->name(),
+            'filename' => fake()->word() . '.' . fake()->fileExtension(),
             'mime_type' => fake()->mimeType(),
             'size' => fake()->numberBetween(1, 1000),
         ];

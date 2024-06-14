@@ -14,8 +14,15 @@ export interface Product {
     variants_count: number;
     description: string;
     variants: Variant[];
+    files: File[];
     created_at: string;
     updated_at: string;
+}
+
+export interface File {
+    id: number;
+    product_id: number;
+    url: string;
 }
 
 export interface Variant {

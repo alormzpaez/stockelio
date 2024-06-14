@@ -3,7 +3,7 @@ import { MouseEvent } from "react";
 
 export default function Card({ name, imgUrl, variantsCount, price, onClick }: {
     name: string,
-    imgUrl: string,
+    imgUrl: string|null,
     variantsCount: number,
     price: number,
     onClick?: (event: MouseEvent<HTMLDivElement>) => void;
@@ -12,7 +12,7 @@ export default function Card({ name, imgUrl, variantsCount, price, onClick }: {
         <FlowbiteCard
             className="max-w-xs overflow-hidden cursor-pointer"
             imgAlt={name}
-            imgSrc={imgUrl}
+            imgSrc={imgUrl ? imgUrl : ''}
             onClick={onClick}
         >
             <div className='flex'>

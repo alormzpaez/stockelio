@@ -55,6 +55,7 @@ class ProductController extends Controller
         $product->load([
             'cheapestVariant:id,variants.product_id,retail_price',
             'variants:id,variants.product_id,retail_price',
+            'files:id,product_id,filename',
         ]);
 
         return Inertia::render('Products/Show', compact('product'));

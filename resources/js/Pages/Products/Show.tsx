@@ -1,8 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router, useForm } from "@inertiajs/react";
 import { PageProps, Product, Variant } from "@/types";
-import { Button, Toast, Label, Select } from "flowbite-react";
-import { FormEventHandler, useEffect, useState } from "react";
+import { Button, Toast, Label, Select, Carousel } from "flowbite-react";
+import { FormEventHandler, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { FaCartShopping } from "react-icons/fa6";
 import { HiFire } from "react-icons/hi";
@@ -54,7 +54,7 @@ export default function Show({
                         ) : null}
                     </>
 
-                    <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
+                    <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg md:px-4">
                         <div className="p-6 text-4xl font-medium text-gray-900 dark:text-gray-100">
                             <Button
                                 color="gray"
@@ -67,18 +67,26 @@ export default function Show({
                             </Button>
                         </div>
                         <hr className="h-px bg-gray-200 border-0 dark:bg-gray-700"></hr>
-                        <section className="px-8 py-8 antialiased bg-white md:py-16 dark:bg-gray-800">
-                            <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0">
-                                <div className="lg:grid lg:grid-cols-2 lg:gap-8 xl:gap-16">
-                                    <div className="max-w-md mx-auto shrink-0 lg:max-w-lg">
-                                        <img
-                                            className="hidden w-full dark:block"
-                                            src={product.thumbnail_url}
-                                            alt=""
-                                        />
+                        <section className="px-5 py-8 antialiased bg-white md:py-16 dark:bg-gray-800">
+                            <div className="max-w-screen-xl mx-auto 2xl:px-0">
+                                <div className="w-full lg:flex lg:justify-center lg:gap-4 xl:gap-16">
+                                    <div className="flex items-center grow lg:flex-1">
+                                        <div className="flex w-full h-56 sm:h-64 xl:h-80 2xl:h-96">
+                                            <Carousel className="bg-gray-300 rounded-lg dark:bg-gray-700">
+                                                {
+                                                    product.files.map((file) => 
+                                                        <img
+                                                            className="w-auto h-full"
+                                                            src={file.url}
+                                                            alt="..."
+                                                        />
+                                                    )
+                                                }
+                                            </Carousel>
+                                        </div>
                                     </div>
 
-                                    <div className="mt-6 sm:mt-8 lg:mt-0">
+                                    <div className="mt-6 lg:w-1/2 sm:mt-8 lg:mt-0">
                                         <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
                                             {product.name}
                                         </h1>

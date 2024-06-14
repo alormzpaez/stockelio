@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Http\Controllers;
 
+use App\Models\File;
 use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
@@ -10,6 +11,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -74,7 +76,12 @@ class ProductControllerTest extends TestCase
     public function test_show(): void
     {
         Sanctum::actingAs(User::factory()->create());
-        $product = Product::factory()->hasVariants(2)->create();
+        $product = Product::factory()
+            ->hasVariants(2)
+            ->has(File::factory(2)->state([
+                'filename' => 'image.png',
+            ]))
+        ->create();
 
         $this->get(route('products.show', $product->id))
             ->assertOk()
@@ -98,6 +105,13 @@ class ProductControllerTest extends TestCase
                     $page->has('id')
                         ->has('product_id')
                     ->has('retail_price')
+                )
+                ->has('files', 2, fn (AssertableInertia $page) =>
+                    $page->has('id')
+                        ->has('product_id')
+                        ->has('url')
+                        ->has('filename')
+                    ->where('url', fn (string $url) => Str::endsWith($url, 'image.png'))
                 )
             )
         );
@@ -125,6 +139,7 @@ class ProductControllerTest extends TestCase
                     ->has('variants_count')
                     ->has('files', 2, fn (AssertableInertia $page) =>
                         $page->has('id')
+                            ->has('url')
                         ->has('product_id')
                     )
                 ->where('variants_count', 2)
