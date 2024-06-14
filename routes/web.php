@@ -4,6 +4,8 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\PermissionsEnum;
+use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -31,7 +33,10 @@ require __DIR__.'/auth.php';
 
 // System routes
 Route::middleware('auth')->group(function () {
-    Route::resource('products', ProductController::class)->only(['index', 'show', 'edit', 'update']);
+    Route::resource('products', ProductController::class)->only(['index', 'show']);
+    Route::resource('products', ProductController::class)->only(['edit', 'update'])->middleware([
+        Authorize::using(PermissionsEnum::UpdateProduct->value)
+    ]);
     Route::resource('carts', CartController::class)->only(['show']);
     Route::resource('orders', OrderController::class)->only(['store', 'destroy', 'update']);
 });

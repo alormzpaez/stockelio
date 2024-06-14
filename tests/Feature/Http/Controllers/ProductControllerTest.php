@@ -5,7 +5,9 @@ namespace Tests\Feature\Http\Controllers;
 use App\Models\File;
 use App\Models\Product;
 use App\Models\User;
+use App\RolesEnum;
 use Carbon\Carbon;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
@@ -35,10 +37,29 @@ class ProductControllerTest extends TestCase
         $this->delete("{$this->url}/{$product->id}")->assertMethodNotAllowed(); // destroy
     }
 
-    public function test_user(): void
+    public function test_customer(): void
     {
+        $this->seed(RoleAndPermissionSeeder::class);
+
         $product = Product::factory()->create();
-        Sanctum::actingAs(User::factory()->create());
+
+        Sanctum::actingAs(User::factory()->create()->assignRole(RolesEnum::Customer));
+
+        $this->get($this->url)->assertOk(); // index
+        $this->get("{$this->url}/{$product->id}")->assertOk(); // show
+        $this->get("{$this->url}/create")->assertNotFound(); // create
+        $this->post($this->url)->assertMethodNotAllowed(); // post
+        $this->get("{$this->url}/{$product->id}/edit")->assertForbidden(); // edit
+        $this->put("{$this->url}/{$product->id}")->assertForbidden(); // update
+        $this->delete("{$this->url}/{$product->id}")->assertMethodNotAllowed(); // destroy
+    }
+
+    public function test_admin(): void
+    {
+        $this->seed(RoleAndPermissionSeeder::class);
+
+        $product = Product::factory()->create();
+        Sanctum::actingAs(User::factory()->create()->assignRole(RolesEnum::Admin));
 
         $this->get($this->url)->assertOk(); // index
         $this->get("{$this->url}/{$product->id}")->assertOk(); // show
@@ -119,7 +140,9 @@ class ProductControllerTest extends TestCase
 
     public function test_edit(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $this->seed(RoleAndPermissionSeeder::class);
+
+        Sanctum::actingAs(User::factory()->create()->assignRole(RolesEnum::Admin));
         $product = Product::factory()
             ->hasVariants(2)
             ->hasFiles(2)
@@ -149,10 +172,12 @@ class ProductControllerTest extends TestCase
 
     public function test_update(): void
     {
+        $this->seed(RoleAndPermissionSeeder::class);
+
         Carbon::setTestNow();
         Storage::fake('products');
         
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->create()->assignRole(RolesEnum::Admin));
         $product = Product::factory()->create();
         
         $this->travelTo($now = now()->addMinute());
@@ -182,7 +207,9 @@ class ProductControllerTest extends TestCase
 
     public function test_update_invalid(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $this->seed(RoleAndPermissionSeeder::class);
+
+        Sanctum::actingAs(User::factory()->create()->assignRole(RolesEnum::Admin));
         $product = Product::factory()->create();
 
         $this->get(route('products.edit', $product->id))->assertOk();
@@ -241,10 +268,12 @@ class ProductControllerTest extends TestCase
 
     public function test_update_with_empty_files(): void
     {
+        $this->seed(RoleAndPermissionSeeder::class);
+
         Carbon::setTestNow();
         Storage::fake('products');
 
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->create()->assignRole(RolesEnum::Admin));
         $product = Product::factory()->create();
 
         $this->travelTo($now = now()->addMinute());
@@ -268,10 +297,12 @@ class ProductControllerTest extends TestCase
 
     public function test_update_with_same_description_and_new_files(): void
     {
+        $this->seed(RoleAndPermissionSeeder::class);
+
         Carbon::setTestNow();
         Storage::fake('products');
         
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->create()->assignRole(RolesEnum::Admin));
         $product = Product::factory()->create([
             'description' => $description = 'Some text here...',
         ]);
