@@ -123,11 +123,13 @@ class ProductControllerTest extends TestCase
                     ->has('cheapest_variant', fn (AssertableInertia $page) =>
                         $page->has('id') 
                             ->has('product_id') 
+                            ->has('name')
                         ->has('retail_price') 
                     )
                 ->has('variants', 2, fn (AssertableInertia $page) =>
                     $page->has('id')
                         ->has('product_id')
+                        ->has('name')
                     ->has('retail_price')
                 )
                 ->has('files', 2, fn (AssertableInertia $page) =>
@@ -173,11 +175,13 @@ class ProductControllerTest extends TestCase
                     ->has('cheapest_variant', fn (AssertableInertia $page) =>
                         $page->has('id') 
                             ->has('product_id') 
+                            ->has('name')
                         ->has('retail_price') 
                     )
                 ->has('variants', 2, fn (AssertableInertia $page) =>
                     $page->has('id')
                         ->has('product_id')
+                        ->has('name')
                     ->has('retail_price')
                 )
                 ->has('files', 2, fn (AssertableInertia $page) =>

@@ -55,8 +55,8 @@ class ProductController extends Controller
     public function show(Product $product): Response
     {
         $product->load([
-            'cheapestVariant:id,variants.product_id,retail_price',
-            'variants:id,variants.product_id,retail_price',
+            'cheapestVariant:id,variants.product_id,name,retail_price',
+            'variants:id,variants.product_id,name,retail_price',
             'files:id,product_id,filename',
         ]);
 

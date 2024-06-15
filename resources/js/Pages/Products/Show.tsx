@@ -106,7 +106,7 @@ export default function Show({
 
                                     <div className="mt-6 lg:w-1/2 sm:mt-8 lg:mt-0">
                                         <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
-                                            {product.name}
+                                            {selectedVariant?.name}
                                         </h1>
                                         <div className="mt-4 sm:items-center sm:gap-4 sm:flex">
                                             <p className="text-2xl font-extrabold text-gray-900 sm:text-3xl dark:text-white">
@@ -240,8 +240,7 @@ export default function Show({
                                                                     }
                                                                     key={index}
                                                                 >
-                                                                    {"#" +
-                                                                        variant.id +
+                                                                    {variant.name +
                                                                         " ($" +
                                                                         variant.retail_price +
                                                                         ")"}

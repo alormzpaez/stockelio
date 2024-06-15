@@ -28,6 +28,7 @@ export interface File {
 export interface Variant {
     id: number;
     product_id: number;
+    name: string;
     retail_price: number;
     product: Product;
 }
