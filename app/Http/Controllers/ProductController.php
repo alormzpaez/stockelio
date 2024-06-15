@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
+use App\PermissionsEnum;
 use App\Services\FileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -58,7 +60,13 @@ class ProductController extends Controller
             'files:id,product_id,filename',
         ]);
 
-        return Inertia::render('Products/Show', compact('product'));
+        return Inertia::render('Products/Show', array_merge(compact('product'), [
+            'can' => [
+                PermissionsEnum::UpdateProduct->value => Auth::user()->can(
+                    PermissionsEnum::UpdateProduct->value
+                )
+            ]
+        ]));
     }
 
     /**

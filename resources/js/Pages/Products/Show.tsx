@@ -4,13 +4,14 @@ import { PageProps, Product, Variant } from "@/types";
 import { Button, Toast, Label, Select, Carousel } from "flowbite-react";
 import { FormEventHandler, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
-import { FaCartShopping } from "react-icons/fa6";
+import { FaCartShopping, FaPencil } from "react-icons/fa6";
 import { HiFire } from "react-icons/hi";
 
 export default function Show({
     auth,
     product,
     flash,
+    can,
 }: PageProps<{ product: Product }>) {
     const [selectedVariant, setSelectedVariant] = useState<Variant | null>(
         product.cheapest_variant
@@ -55,16 +56,35 @@ export default function Show({
                     </>
 
                     <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg md:px-4">
-                        <div className="p-6 text-4xl font-medium text-gray-900 dark:text-gray-100">
+                        <div className="flex justify-between gap-4 p-6 text-4xl font-medium text-gray-900 dark:text-gray-100">
                             <Button
                                 color="gray"
                                 onClick={() => {
                                     router.visit(route("products.index"));
                                 }}
+                                disabled={processing}
                             >
-                                <FaArrowLeft className="mr-2" />
-                                Volver a productos
+                                <div className="flex items-center gap-2">
+                                    <FaArrowLeft className="mr-2" />
+                                    Volver a productos
+                                </div>
                             </Button>
+                            {can["update product"] && (
+                                <Button
+                                    color="blue"
+                                    onClick={() => {
+                                        router.visit(
+                                            route("products.edit", product.id)
+                                        );
+                                    }}
+                                    disabled={processing}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <FaPencil className="mr-2" />
+                                        Editar producto
+                                    </div>
+                                </Button>
+                            )}
                         </div>
                         <hr className="h-px bg-gray-200 border-0 dark:bg-gray-700"></hr>
                         <section className="px-5 py-8 antialiased bg-white md:py-16 dark:bg-gray-800">
@@ -73,15 +93,13 @@ export default function Show({
                                     <div className="flex items-center grow lg:flex-1">
                                         <div className="flex w-full h-56 sm:h-64 xl:h-80 2xl:h-96">
                                             <Carousel className="bg-gray-300 rounded-lg dark:bg-gray-700">
-                                                {
-                                                    product.files.map((file) => 
-                                                        <img
-                                                            className="w-auto h-full"
-                                                            src={file.url}
-                                                            alt="..."
-                                                        />
-                                                    )
-                                                }
+                                                {product.files.map((file) => (
+                                                    <img
+                                                        className="w-auto h-full"
+                                                        src={file.url}
+                                                        alt="..."
+                                                    />
+                                                ))}
                                             </Carousel>
                                         </div>
                                     </div>

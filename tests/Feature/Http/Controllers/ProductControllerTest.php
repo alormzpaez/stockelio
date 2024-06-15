@@ -5,6 +5,7 @@ namespace Tests\Feature\Http\Controllers;
 use App\Models\File;
 use App\Models\Product;
 use App\Models\User;
+use App\PermissionsEnum;
 use App\RolesEnum;
 use Carbon\Carbon;
 use Database\Seeders\RoleAndPermissionSeeder;
@@ -94,9 +95,11 @@ class ProductControllerTest extends TestCase
         );
     }
 
-    public function test_show(): void
+    public function test_show_as_customer(): void
     {
-        Sanctum::actingAs(User::factory()->create());
+        $this->seed(RoleAndPermissionSeeder::class);
+
+        Sanctum::actingAs(User::factory()->create()->assignRole(RolesEnum::Customer));
         $product = Product::factory()
             ->hasVariants(2)
             ->has(File::factory(2)->state([
@@ -134,6 +137,60 @@ class ProductControllerTest extends TestCase
                         ->has('filename')
                     ->where('url', fn (string $url) => Str::endsWith($url, 'image.png'))
                 )
+            )
+            ->has('can', fn (AssertableInertia $page) =>
+                $page->has(PermissionsEnum::UpdateProduct->value)
+                ->where(PermissionsEnum::UpdateProduct->value, false)
+            )
+        );
+    }
+
+    public function test_show_as_admin(): void
+    {
+        $this->seed(RoleAndPermissionSeeder::class);
+
+        Sanctum::actingAs(User::factory()->create()->assignRole(RolesEnum::Admin));
+        $product = Product::factory()
+            ->hasVariants(2)
+            ->has(File::factory(2)->state([
+                'filename' => 'image.png',
+            ]))
+        ->create();
+
+        $this->get(route('products.show', $product->id))
+            ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) =>
+            $page->component('Products/Show')
+            ->has('product', fn (AssertableInertia $page) =>
+                $page->has('id')
+                    ->has('name')
+                    ->has('thumbnail_url')
+                    ->has('description')
+                    ->has('stripe_product_id')
+                    ->has('printful_product_id')
+                    ->has('created_at')
+                    ->has('updated_at')
+                    ->has('cheapest_variant', fn (AssertableInertia $page) =>
+                        $page->has('id') 
+                            ->has('product_id') 
+                        ->has('retail_price') 
+                    )
+                ->has('variants', 2, fn (AssertableInertia $page) =>
+                    $page->has('id')
+                        ->has('product_id')
+                    ->has('retail_price')
+                )
+                ->has('files', 2, fn (AssertableInertia $page) =>
+                    $page->has('id')
+                        ->has('product_id')
+                        ->has('url')
+                        ->has('filename')
+                    ->where('url', fn (string $url) => Str::endsWith($url, 'image.png'))
+                )
+            )
+            ->has('can', fn (AssertableInertia $page) =>
+                $page->has(PermissionsEnum::UpdateProduct->value)
+                ->where(PermissionsEnum::UpdateProduct->value, true)
             )
         );
     }
