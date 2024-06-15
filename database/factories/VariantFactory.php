@@ -19,6 +19,7 @@ class VariantFactory extends Factory
     {
         return [
             'product_id' => Product::factory(),
+            'name' => fake()->words(3, true),
             'retail_price' => fake()->randomFloat(2, 1, 1000),
             'currency' => fake()->currencyCode(),
             'stripe_price_id' => fake()->text(50),

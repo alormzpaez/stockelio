@@ -18,6 +18,7 @@ class Variant extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'name',
         'retail_price',
         'currency',
         'printful_variant_id',

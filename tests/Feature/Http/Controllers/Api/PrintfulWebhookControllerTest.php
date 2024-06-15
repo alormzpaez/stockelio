@@ -95,6 +95,7 @@ class PrintfulWebhookControllerTest extends TestCase
         $this->assertDatabaseCount('variants', 2);
         $this->assertDatabaseHas('variants', [
             'currency' => $printfulProductBody['result']['sync_variants'][0]['currency'],
+            'name' => $printfulProductBody['result']['sync_variants'][0]['name'],
             'retail_price' => 29.99,
             'product_id' => $product->id,
             'printful_variant_id' => $printfulProductBody['result']['sync_variants'][0]['id'],
@@ -102,6 +103,7 @@ class PrintfulWebhookControllerTest extends TestCase
         ]);
         $this->assertDatabaseHas('variants', [
             'currency' => $printfulProductBody['result']['sync_variants'][1]['currency'],
+            'name' => $printfulProductBody['result']['sync_variants'][1]['name'],
             'retail_price' => 39.99,
             'product_id' => $product->id,
             'printful_variant_id' => $printfulProductBody['result']['sync_variants'][1]['id'],

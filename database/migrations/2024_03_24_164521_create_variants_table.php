@@ -15,6 +15,7 @@ return new class extends Migration
         Schema::create('variants', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Product::class);
+            $table->string('name');
             $table->float('retail_price');
             $table->string('currency');
             $table->unsignedBigInteger('printful_variant_id')->unique();

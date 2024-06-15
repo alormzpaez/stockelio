@@ -57,6 +57,7 @@ class PrintfulWebhookController extends Controller
                         );
 
                         $product->variants()->create([
+                            'name' => $variantRequest['name'],
                             'currency' => $variantRequest['currency'],
                             'retail_price' => doubleval($variantRequest['retail_price']),
                             'stripe_price_id' => $response['id'],
