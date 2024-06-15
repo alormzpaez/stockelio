@@ -100,8 +100,20 @@ class ProductController extends Controller
     {
         $product->update($request->only('description'));
 
+        $firstFile = null;
+
         foreach ($request->validated('files') as $file) {
-            $this->fileService->save($product->id, $file);
+            $currentFile = $this->fileService->save($product->id, $file);
+
+            if (is_null($firstFile)) {
+                $firstFile = $currentFile;
+            }
+        }
+
+        if (is_null($product->thumbnail_url) && $firstFile) {
+            $product->update([
+                'thumbnail_url' => $firstFile->url,
+            ]);
         }
 
         if (count($request->validated('files')) > 0) {

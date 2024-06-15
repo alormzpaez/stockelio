@@ -264,6 +264,7 @@ class ProductControllerTest extends TestCase
         $this->assertCount(2, $product->files);
         $this->assertTrue(Storage::disk('products')->exists($product->files->get(0)->filename));
         $this->assertTrue(Storage::disk('products')->exists($product->files->get(1)->filename));
+        $this->assertEquals($product->thumbnail_url, $product->files->get(0)->url);
     }
 
     public function test_update_invalid(): void
