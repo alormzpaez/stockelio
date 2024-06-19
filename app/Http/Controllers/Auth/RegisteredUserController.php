@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\RolesEnum;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -50,7 +51,7 @@ class RegisteredUserController extends Controller
             'country_name' => 'United States',
             'zip' => '91311',
             'phone' => '8181818181',
-        ]);
+        ])->assignRole(RolesEnum::Customer->value);
 
         event(new Registered($user));
 
