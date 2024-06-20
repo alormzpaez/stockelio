@@ -12,10 +12,12 @@ class Order extends Model
 
     public const IN_CART_STATUS = 'incart';
     public const DRAFT_STATUS = 'draft';
+    public const PENDING_STATUS = 'pending';
     public const FULFILLED_STATUS = 'fulfilled';
     public const STATUSES = [
         self::IN_CART_STATUS,
         self::DRAFT_STATUS,
+        self::PENDING_STATUS,
         self::FULFILLED_STATUS,
     ];
 
@@ -30,7 +32,9 @@ class Order extends Model
      */
     protected $fillable = [
         'variant_id',
+        'status',
         'quantity',
+        'printful_order_id',
     ];
     
     public function cart(): BelongsTo

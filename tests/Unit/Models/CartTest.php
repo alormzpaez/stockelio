@@ -27,4 +27,23 @@ class CartTest extends TestCase
         $this->assertInstanceOf(Collection::class, $cart->orders);
         $this->assertInstanceOf(Order::class, $cart->orders->get(0));
     }
+    
+    public function test_has_many_incart_orders(): void
+    {
+        $cart = Cart::factory()->create();
+
+        Order::factory()->for($cart)->create([
+            'status' => Order::FULFILLED_STATUS,
+        ]);
+        $order = Order::factory()->for($cart)->create([
+            'status' => Order::IN_CART_STATUS,
+        ]);
+
+        $cart->load('incartOrders');
+
+        $this->assertInstanceOf(Collection::class, $cart->incartOrders);
+        $this->assertCount(1, $cart->incartOrders);
+        $this->assertInstanceOf(Order::class, $cart->incartOrders->get(0));
+        $this->assertEquals($cart->incartOrders->get(0)->id, $order->id);
+    }
 }

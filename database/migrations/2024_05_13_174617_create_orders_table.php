@@ -21,8 +21,10 @@ return new class extends Migration
             $table->enum('status', [
                 'incart',
                 'draft', // The order is created in system but is not yet submitted for fulfillment. You still can edit it and confirm later.
+                'pending', // The order now is created in printful, waiting to be fulfilled there.
                 'fulfilled', // All items have been shipped successfully
             ])->default('incart');
+            $table->unsignedBigInteger('printful_order_id')->nullable()->unique();
             $table->timestamps();
         });
     }

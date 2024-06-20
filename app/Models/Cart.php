@@ -20,4 +20,9 @@ class Cart extends Model
     {
         return $this->hasMany(Order::class);
     }
+
+    public function incartOrders(): HasMany
+    {
+        return $this->orders()->where('status', Order::IN_CART_STATUS);
+    }
 }

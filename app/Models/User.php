@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Observers\UserObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -59,6 +60,30 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['personalData'];
+
+    /**
+     * Useful as 'recipient' when create a new order in Printful API.
+     */
+    protected function personalData(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => [
+                'name' => $this->name,
+                'address1' => $this->address1,
+                'city' => $this->city,
+                'state_code' => $this->state_code,
+                'country_code' => $this->country_code,
+                'zip' => $this->zip,
+            ]
+        );
     }
 
     protected $with = ['cart'];
