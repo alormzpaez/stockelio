@@ -69,11 +69,11 @@ class CheckoutServiceTest extends TestCase
             ]))
         ->create();
 
-        $this->assertCount(3, Order::where('status', Order::IN_CART_STATUS)->get());
+        $this->assertCount(3, Order::where('status', Order::INCART_STATUS)->get());
         $this->assertCount(2, $cart->incartOrders);
-        $this->assertEquals($order1->status, Order::IN_CART_STATUS);
+        $this->assertEquals($order1->status, Order::INCART_STATUS);
         $this->assertNull($order1->printful_order_id);
-        $this->assertEquals($order2->status, Order::IN_CART_STATUS);
+        $this->assertEquals($order2->status, Order::INCART_STATUS);
         $this->assertNull($order2->printful_order_id);
 
         $this->checkoutService->executeSuccess($user->id);
@@ -82,7 +82,7 @@ class CheckoutServiceTest extends TestCase
         $order1->refresh();
         $order2->refresh();
 
-        $this->assertCount(1, Order::where('status', Order::IN_CART_STATUS)->get());
+        $this->assertCount(1, Order::where('status', Order::INCART_STATUS)->get());
         $this->assertEmpty($cart->incartOrders);
         $this->assertEquals($order1->status, Order::PENDING_STATUS);
         $this->assertEquals($order1->printful_order_id, 13);
@@ -148,11 +148,11 @@ class CheckoutServiceTest extends TestCase
             ]))
         ->create();
 
-        $this->assertCount(3, Order::where('status', Order::IN_CART_STATUS)->get());
+        $this->assertCount(3, Order::where('status', Order::INCART_STATUS)->get());
         $this->assertCount(2, $cart->incartOrders);
-        $this->assertEquals($order1->status, Order::IN_CART_STATUS);
+        $this->assertEquals($order1->status, Order::INCART_STATUS);
         $this->assertNull($order1->printful_order_id);
-        $this->assertEquals($order2->status, Order::IN_CART_STATUS);
+        $this->assertEquals($order2->status, Order::INCART_STATUS);
         $this->assertNull($order2->printful_order_id);
 
         try {
@@ -165,11 +165,11 @@ class CheckoutServiceTest extends TestCase
         $order1->refresh();
         $order2->refresh();
 
-        $this->assertCount(3, Order::where('status', Order::IN_CART_STATUS)->get());
+        $this->assertCount(3, Order::where('status', Order::INCART_STATUS)->get());
         $this->assertCount(2, $cart->incartOrders);
-        $this->assertEquals($order1->status, Order::IN_CART_STATUS);
+        $this->assertEquals($order1->status, Order::INCART_STATUS);
         $this->assertNull($order1->printful_order_id);
-        $this->assertEquals($order2->status, Order::IN_CART_STATUS);
+        $this->assertEquals($order2->status, Order::INCART_STATUS);
         $this->assertNull($order2->printful_order_id);
 
         Http::assertSentInOrder([

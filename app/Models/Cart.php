@@ -23,6 +23,6 @@ class Cart extends Model
 
     public function incartOrders(): HasMany
     {
-        return $this->orders()->where('status', Order::IN_CART_STATUS);
+        return $this->orders()->where('status', Order::INCART_STATUS);
     }
 }

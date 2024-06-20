@@ -10,19 +10,19 @@ class Order extends Model
 {
     use HasFactory;
 
-    public const IN_CART_STATUS = 'incart';
+    public const INCART_STATUS = 'incart';
     public const DRAFT_STATUS = 'draft';
     public const PENDING_STATUS = 'pending';
     public const FULFILLED_STATUS = 'fulfilled';
     public const STATUSES = [
-        self::IN_CART_STATUS,
+        self::INCART_STATUS,
         self::DRAFT_STATUS,
         self::PENDING_STATUS,
         self::FULFILLED_STATUS,
     ];
 
     protected $attributes = [
-        'status' => self::IN_CART_STATUS,
+        'status' => self::INCART_STATUS,
     ];
 
     /**

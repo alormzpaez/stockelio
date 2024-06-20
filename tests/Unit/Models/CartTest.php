@@ -36,7 +36,7 @@ class CartTest extends TestCase
             'status' => Order::FULFILLED_STATUS,
         ]);
         $order = Order::factory()->for($cart)->create([
-            'status' => Order::IN_CART_STATUS,
+            'status' => Order::INCART_STATUS,
         ]);
 
         $cart->load('incartOrders');
