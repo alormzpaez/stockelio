@@ -43,17 +43,17 @@ class CartController extends Controller
         Gate::authorize('view', $cart);
 
         $cart->load([
-            'orders:id,cart_id,status,quantity,variant_id',
-            'orders.variant:id,product_id,retail_price',
-            'orders.variant.product:id,name,thumbnail_url',
+            'incartOrders:id,cart_id,status,quantity,variant_id',
+            'incartOrders.variant:id,product_id,retail_price',
+            'incartOrders.variant.product:id,name,thumbnail_url',
         ]);
 
-        $sortedOrders = $cart->orders->sortDesc()->values();
+        $sortedOrders = $cart->incartOrders->sortDesc()->values();
 
         return Inertia::render('Carts/Show', [
             'cart' => [
                 ...Arr::only($cart->toArray(), ['id', 'user_id', 'created_at', 'updated_at']),
-                'total' => $cart->orders->sum(fn ($order) =>
+                'total' => $sortedOrders->sum(fn ($order) =>
                     $order->quantity * $order->variant->retail_price
                 ),
                 'orders' => $sortedOrders,

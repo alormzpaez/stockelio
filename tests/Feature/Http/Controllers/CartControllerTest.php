@@ -65,6 +65,17 @@ class CartControllerTest extends TestCase
             'quantity' => 3
         ]);
 
+        // The next order won't appear, because it doesn't have 'incart' status
+        Order::factory()
+            ->for($user->cart)
+            ->for(Variant::factory()->state([
+                'retail_price' => 10
+            ]))
+        ->create([
+            'quantity' => 4,
+            'status' => Order::PENDING_STATUS,
+        ]);
+
         $this->get(route('carts.show', $user->cart->id))
             ->assertOk()
         ->assertInertia(fn (AssertableInertia $page) =>
