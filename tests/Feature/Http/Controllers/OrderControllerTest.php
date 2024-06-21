@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Inertia\Testing\AssertableInertia;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -21,7 +22,7 @@ class OrderControllerTest extends TestCase
     {
         $order = Order::factory()->create();
 
-        $this->get($this->url)->assertMethodNotAllowed(); // index
+        $this->get($this->url)->assertRedirect(route('login')); // index
         $this->get("{$this->url}/{$order->id}")->assertMethodNotAllowed(); // show
         $this->get("{$this->url}/create")->assertMethodNotAllowed(); // create
         $this->post($this->url)->assertRedirect(route('login')); // post
@@ -35,13 +36,69 @@ class OrderControllerTest extends TestCase
         $order = Order::factory()->create();
         Sanctum::actingAs(User::factory()->create());
 
-        $this->get($this->url)->assertMethodNotAllowed(); // index
+        $this->get($this->url)->assertOk(); // index
         $this->get("{$this->url}/{$order->id}")->assertMethodNotAllowed(); // show
         $this->get("{$this->url}/create")->assertMethodNotAllowed(); // create
         $this->post($this->url)->assertInvalid(); // post
         $this->get("{$this->url}/edit")->assertMethodNotAllowed(); // edit
         $this->put("{$this->url}/{$order->id}")->assertInvalid(); // update
         $this->delete("{$this->url}/{$order->id}")->assertRedirect(); // destroy
+    }
+
+    public function test_index(): void
+    {
+        Sanctum::actingAs($user = User::factory()->create());
+
+        $order1 = Order::factory()
+            ->for($user->cart)
+            ->for(Variant::factory()->state([
+                'retail_price' => 100
+            ]))
+        ->create([
+            'quantity' => 2,
+            'status' => Order::PENDING_STATUS,
+        ]);
+        $order2 = Order::factory()
+            ->for($user->cart)
+            ->for(Variant::factory()->state([
+                'retail_price' => 50
+            ]))
+        ->create([
+            'quantity' => 3,
+            'status' => Order::PENDING_STATUS,
+        ]);
+
+        // This won't be appear, because doesn't have 'pending' status (the default status required in this endpoint).
+        Order::factory()
+            ->for($user->cart)
+        ->create();
+
+        $this->get(route('orders.index'))
+            ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) =>
+            $page->component('Orders/Index')
+            ->has('orders', 2, fn (AssertableInertia $page) =>
+                $page->has('id')
+                    ->has('variant_id')
+                    ->has('quantity')
+                    ->has('status')
+                    ->has('total')
+                ->has('variant', fn (AssertableInertia $page) =>
+                    $page->has('id') 
+                        ->has('name')
+                        ->has('product_id')
+                        ->has('retail_price') 
+                    ->has('product', fn (AssertableInertia $page) => 
+                        $page->has('id')
+                        ->has('thumbnail_url')
+                    )
+                )
+            )
+            ->where('orders.0.id', $order2->id)
+            ->where('orders.0.total', 150)
+            ->where('orders.1.id', $order1->id)
+            ->where('orders.1.total', 200)
+        );
     }
 
     public function test_store(): void

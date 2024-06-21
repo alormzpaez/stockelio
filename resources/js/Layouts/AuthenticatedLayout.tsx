@@ -4,7 +4,7 @@ import { Link } from '@inertiajs/react';
 import { User } from '@/types';
 import { Button, DarkThemeToggle, Flowbite, Sidebar } from 'flowbite-react';
 import { HiArrowSmRight, HiShoppingBag, HiUser, HiMenu, HiHome } from 'react-icons/hi';
-import { FaShoppingCart } from "react-icons/fa";
+import { FaBoxes, FaShoppingCart } from "react-icons/fa";
 import { Avatar } from 'flowbite-react';
 
 export default function Authenticated({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
@@ -67,6 +67,11 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                 <Link href={route('carts.show', user.cart.id)}>
                                     <Sidebar.Item icon={FaShoppingCart}>
                                         Mi carrito
+                                    </Sidebar.Item>
+                                </Link>
+                                <Link href={route('orders.index')}>
+                                    <Sidebar.Item icon={FaBoxes}>
+                                        Mis pedidos
                                     </Sidebar.Item>
                                 </Link>
                                 <Link href={route('logout')} method="post">

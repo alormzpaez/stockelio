@@ -8,15 +8,39 @@ use App\Models\Order;
 use App\Models\Variant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class OrderController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): Response
     {
-        //
+        $orders = Auth::user()
+            ->cart
+            ->orders()
+            ->where('status', Order::PENDING_STATUS)
+            ->with([
+                'variant.product:id,thumbnail_url',
+                'variant:id,name,retail_price,product_id',
+            ])
+            ->select([
+                'id',
+                'variant_id',
+                'quantity',
+                'status',
+            ])
+            ->orderBy('id', 'DESC')
+            ->get()
+        ->map(fn (Order $order) => 
+            array_merge($order->toArray(), [
+                'total' => $order->quantity * $order->variant->retail_price
+            ])
+        );
+
+        return Inertia::render('Orders/Index', compact('orders'));
     }
 
     /**
