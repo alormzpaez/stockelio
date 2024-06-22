@@ -23,10 +23,10 @@ class OrderControllerTest extends TestCase
         $order = Order::factory()->create();
 
         $this->get($this->url)->assertRedirect(route('login')); // index
-        $this->get("{$this->url}/{$order->id}")->assertMethodNotAllowed(); // show
-        $this->get("{$this->url}/create")->assertMethodNotAllowed(); // create
+        $this->get("{$this->url}/{$order->id}")->assertRedirect(route('login')); // show
+        $this->get("{$this->url}/create")->assertRedirect(route('login')); // create
         $this->post($this->url)->assertRedirect(route('login')); // post
-        $this->get("{$this->url}/edit")->assertMethodNotAllowed(); // edit
+        $this->get("{$this->url}/edit")->assertRedirect(route('login')); // edit
         $this->put("{$this->url}/{$order->id}")->assertRedirect(route('login')); // update
         $this->delete("{$this->url}/{$order->id}")->assertRedirect(route('login')); // destroy
     }
@@ -37,10 +37,10 @@ class OrderControllerTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
 
         $this->get($this->url)->assertOk(); // index
-        $this->get("{$this->url}/{$order->id}")->assertMethodNotAllowed(); // show
-        $this->get("{$this->url}/create")->assertMethodNotAllowed(); // create
+        $this->get("{$this->url}/{$order->id}")->assertOk(); // show
+        $this->get("{$this->url}/create")->assertNotFound(); // create
         $this->post($this->url)->assertInvalid(); // post
-        $this->get("{$this->url}/edit")->assertMethodNotAllowed(); // edit
+        $this->get("{$this->url}/edit")->assertNotFound(); // edit
         $this->put("{$this->url}/{$order->id}")->assertInvalid(); // update
         $this->delete("{$this->url}/{$order->id}")->assertRedirect(); // destroy
     }
@@ -98,6 +98,39 @@ class OrderControllerTest extends TestCase
             ->where('orders.0.total', 150)
             ->where('orders.1.id', $order1->id)
             ->where('orders.1.total', 200)
+        );
+    }
+
+    public function test_show(): void
+    {
+        Sanctum::actingAs($user = User::factory()->create());
+
+        $order = Order::factory()
+            ->for($user->cart)
+        ->create([
+            'status' => Order::PENDING_STATUS,
+        ]);
+
+        $this->get(route('orders.show', $order->id))
+            ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) =>
+            $page->component('Orders/Show')
+            ->has('order', fn (AssertableInertia $page) =>
+                $page->has('id')
+                    ->has('variant_id')
+                    ->has('quantity')
+                    ->has('status')
+                ->has('variant', fn (AssertableInertia $page) =>
+                    $page->has('id') 
+                        ->has('name')
+                        ->has('product_id')
+                        ->has('retail_price') 
+                    ->has('product', fn (AssertableInertia $page) => 
+                        $page->has('id')
+                        ->has('thumbnail_url')
+                    )
+                )
+            )
         );
     }
 

@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateOrderRequest;
 use App\Models\Order;
 use App\Models\Variant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -77,9 +78,22 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Order $order)
+    public function show(Order $order): Response
     {
-        //
+        $order->load([
+            'variant.product:id,thumbnail_url',
+            'variant:id,name,retail_price,product_id',
+        ]);
+
+        return Inertia::render('Orders/Show', [
+            'order' => Arr::only($order->toArray(), [
+                'id',
+                'variant_id',
+                'quantity',
+                'status',
+                'variant',
+            ])
+        ]);
     }
 
     /**

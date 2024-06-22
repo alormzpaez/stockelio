@@ -38,5 +38,5 @@ Route::middleware('auth')->group(function () {
         Authorize::using(PermissionsEnum::UpdateProduct->value)
     ]);
     Route::resource('carts', CartController::class)->only(['show']);
-    Route::resource('orders', OrderController::class)->only(['index', 'store', 'destroy', 'update']);
+    Route::resource('orders', OrderController::class)->except(['create', 'edit']);
 });
