@@ -91,4 +91,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Location::class);
     }
+
+    public function preferredLocation(): HasOne
+    {
+        return $this->locations()->one()->where('is_preferred', true);
+    }
 }
