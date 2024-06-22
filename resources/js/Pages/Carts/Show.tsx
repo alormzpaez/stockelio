@@ -1,9 +1,9 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link } from "@inertiajs/react";
 import { Cart, PageProps } from "@/types";
-import { Button, Toast } from "flowbite-react";
+import { Toast } from "flowbite-react";
 import OrderCard from "@/Components/OrderCard";
-import { HiFire } from "react-icons/hi";
+import { HiFire, HiX } from "react-icons/hi";
 
 export default function Show({ auth, cart, flash }: PageProps<{ cart: Cart }>) {
     return (
@@ -22,9 +22,15 @@ export default function Show({ auth, cart, flash }: PageProps<{ cart: Cart }>) {
                     <>
                         {flash.message ? (
                             <Toast className="mb-2">
-                                <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-cyan-100 text-cyan-500 dark:bg-cyan-800 dark:text-cyan-200">
-                                    <HiFire className="w-5 h-5" />
-                                </div>
+                                {flash.type == "error" ? (
+                                    <div className="inline-flex items-center justify-center w-8 h-8 text-red-500 bg-red-100 rounded-lg shrink-0 dark:bg-red-800 dark:text-red-200">
+                                        <HiX className="w-5 h-5" />
+                                    </div>
+                                ) : (
+                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-cyan-100 text-cyan-500 dark:bg-cyan-800 dark:text-cyan-200">
+                                        <HiFire className="w-5 h-5" />
+                                    </div>
+                                )}
                                 <div className="ml-3 text-sm font-normal">
                                     {flash.message}
                                 </div>
@@ -32,7 +38,7 @@ export default function Show({ auth, cart, flash }: PageProps<{ cart: Cart }>) {
                             </Toast>
                         ) : null}
                     </>
-                    
+
                     <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
                         <section className="py-8 antialiased bg-white dark:bg-gray-800 md:py-16 md:px-6">
                             <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0">
@@ -82,12 +88,12 @@ export default function Show({ auth, cart, flash }: PageProps<{ cart: Cart }>) {
                                                 </dl>
                                             </div>
 
-                                            <Button
-                                                color="blue"
-                                                className="flex w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium text-white"
+                                            <a
+                                                href={route("checkout")}
+                                                className="flex w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
                                             >
                                                 Proceder al pago
-                                            </Button>
+                                            </a>
 
                                             <div className="flex items-center justify-center gap-2">
                                                 <span className="text-sm font-normal text-gray-500 dark:text-gray-400">

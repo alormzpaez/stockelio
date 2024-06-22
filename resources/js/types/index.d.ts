@@ -77,6 +77,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
     };
     flash: {
         message: string | null;
+        type: 'error' | 'notification' | null;
     },
     can: {
         [key: string]: boolean;

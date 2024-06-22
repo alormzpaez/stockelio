@@ -2,10 +2,13 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import { Order, PageProps } from "@/types";
 import ShowableOrderCard from "@/Components/ShowableOrderCard";
+import { Toast } from "flowbite-react";
+import { HiFire, HiX } from "react-icons/hi";
 
 export default function Index({
     auth,
     orders,
+    flash,
 }: PageProps<{ orders: Order[] }>) {
     return (
         <AuthenticatedLayout
@@ -20,6 +23,26 @@ export default function Index({
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    <>
+                        {flash.message ? (
+                            <Toast className="mb-2">
+                                {flash.type == "error" ? (
+                                    <div className="inline-flex items-center justify-center w-8 h-8 text-red-500 bg-red-100 rounded-lg shrink-0 dark:bg-red-800 dark:text-red-200">
+                                        <HiX className="w-5 h-5" />
+                                    </div>
+                                ) : (
+                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-cyan-100 text-cyan-500 dark:bg-cyan-800 dark:text-cyan-200">
+                                        <HiFire className="w-5 h-5" />
+                                    </div>
+                                )}
+                                <div className="ml-3 text-sm font-normal">
+                                    {flash.message}
+                                </div>
+                                <Toast.Toggle />
+                            </Toast>
+                        ) : null}
+                    </>
+
                     <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
                         <section className="py-8 antialiased bg-white dark:bg-gray-800 md:py-16 md:px-6">
                             <div className="max-w-screen-xl px-4 mx-auto 2xl:px-0">
