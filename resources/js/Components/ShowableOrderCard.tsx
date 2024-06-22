@@ -1,3 +1,4 @@
+import { router } from "@inertiajs/react";
 import { Badge } from "flowbite-react";
 import { FaClock } from "react-icons/fa";
 
@@ -16,24 +17,27 @@ export default function ShowableOrderCard({
     retailPrice: number;
     status: string;
 }) {
+    const onClick = () => {
+        router.visit(route("orders.show", id))
+    }
+
     return (
-        <div className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 md:p-6">
+        <div onClick={onClick} className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm cursor-pointer dark:border-gray-700 dark:bg-gray-800 md:p-6 hover:bg-gray-100 hover:dark:bg-gray-700">
             <div className="p-2 space-y-4">
                 <div className="flex items-center gap-6">
-                    <a href="#" className="">
+                    <div className="">
                         <img
                             className="block w-20 h-20"
                             src={imgUrl ?? ""}
                             alt={"order " + id}
                         />
-                    </a>
+                    </div>
 
-                    <a
-                        href="#"
-                        className="flex-1 min-w-0 font-medium text-gray-900 hover:underline dark:text-white"
+                    <div
+                        className="flex-1 min-w-0 font-medium text-gray-900 dark:text-white"
                     >
                         {variantName}
-                    </a>
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-between gap-4">

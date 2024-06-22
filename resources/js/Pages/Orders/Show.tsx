@@ -1,6 +1,8 @@
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import { Order, PageProps } from "@/types";
+import { Button } from "flowbite-react";
+import { FaArrowLeft } from "react-icons/fa";
 
 export default function Index({ auth, order }: PageProps<{ order: Order }>) {
     return (
@@ -17,7 +19,21 @@ export default function Index({ auth, order }: PageProps<{ order: Order }>) {
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm dark:bg-gray-800 sm:rounded-lg">
-                        <section className="py-8 antialiased bg-white dark:bg-gray-800 md:py-16">
+                        <div className="flex justify-between gap-4 p-6 text-4xl font-medium text-gray-900 dark:text-gray-100">
+                            <Button
+                                color="gray"
+                                onClick={() => {
+                                    router.visit(route("orders.index"));
+                                }}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <FaArrowLeft className="mr-2" />
+                                    Volver a mis ordenes
+                                </div>
+                            </Button>
+                        </div>
+                        <hr className="h-px bg-gray-200 border-0 dark:bg-gray-700"></hr>
+                        <section className="py-8 antialiased bg-white dark:bg-gray-800 md:py-12">
                             <div className="max-w-screen-xl px-4 mx-auto">
                                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
                                     Seguimiento de la orden #{order.id}
