@@ -3,7 +3,9 @@
 namespace Tests\Unit\Models;
 
 use App\Models\Cart;
+use App\Models\Location;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -29,5 +31,14 @@ class UserTest extends TestCase
         $this->assertEquals($user->personalData['state_code'], $user->state_code);
         $this->assertEquals($user->personalData['country_code'], $user->country_code);
         $this->assertEquals($user->personalData['zip'], $user->zip);
+    }
+
+    public function test_has_many_locations(): void
+    {
+        $user = User::factory()->hasLocations(2)->create();
+
+        $this->assertInstanceOf(Collection::class, $user->locations);
+        $this->assertCount(2, $user->locations);
+        $this->assertInstanceOf(Location::class, $user->locations->get(0));
     }
 }
