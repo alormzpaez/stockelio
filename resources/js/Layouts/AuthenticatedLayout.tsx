@@ -71,7 +71,7 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                 </Link>
                                 <Link href={route('orders.index')}>
                                     <Sidebar.Item icon={FaBoxes}>
-                                        Mis pedidos
+                                        Mis ordenes
                                     </Sidebar.Item>
                                 </Link>
                                 <Link href={route('logout')} method="post">
