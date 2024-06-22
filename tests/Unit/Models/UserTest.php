@@ -58,4 +58,28 @@ class UserTest extends TestCase
         $this->assertInstanceOf(Location::class, $user->preferredLocation);
         $this->assertEquals($user->preferredLocation->id, $location->id);
     }
+
+    public function test_set_new_preferred_location(): void
+    {
+        $user = User::factory()->hasLocations(2)->create();
+        $location1 = $user->locations->get(0);
+        $location2 = $user->locations->get(1);
+
+        $this->assertNull($user->preferredLocation);
+        $this->assertCount(2, Location::where('is_preferred', false)->get());
+
+        $user->setNewPreferredLocation($location1->id);
+
+        $user->load('preferredLocation');
+
+        $this->assertEquals($user->preferredLocation->id, $location1->id);
+        $this->assertCount(1, Location::where('is_preferred', false)->get());
+
+        $user->setNewPreferredLocation($location2->id);
+
+        $user->load('preferredLocation');
+
+        $this->assertEquals($user->preferredLocation->id, $location2->id);
+        $this->assertCount(1, Location::where('is_preferred', false)->get());
+    }
 }

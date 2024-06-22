@@ -82,6 +82,17 @@ class User extends Authenticatable
 
     protected $with = ['cart'];
 
+    public function setNewPreferredLocation(int $locationId): void
+    {
+        $this->load('locations');
+
+        $this->locations->each(fn (Location $location) =>
+            $location->update([
+                'is_preferred' => ($location->id == $locationId)
+            ])
+        );
+    }
+
     public function cart(): HasOne
     {
         return $this->hasOne(Cart::class);
