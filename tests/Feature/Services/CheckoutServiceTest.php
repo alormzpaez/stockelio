@@ -53,7 +53,9 @@ class CheckoutServiceTest extends TestCase
             ->has(Cart::factory()->hasOrders())
         ->createQuietly();
 
-        $user = User::factory()->create();
+        $user = User::factory()->withPreferredLocation()->create();
+        $user->load('preferredLocation');
+
         $cart = $user->cart;
 
         $order1 = Order::factory()
@@ -90,19 +92,29 @@ class CheckoutServiceTest extends TestCase
         $this->assertEquals($order2->printful_order_id, 14);
 
         Http::assertSentInOrder([
-            function (Request $request) {
+            function (Request $request) use ($user) {
                 $body = json_decode($request->body(), true);
 
                 return $request->url() == 'https://api.printful.com/orders' &&
                     $request->method() == 'POST' &&
-                    $body['items'][0]['sync_variant_id'] == 1;
+                    $body['items'][0]['sync_variant_id'] == 1 &&
+                    $body['recipient']['name'] == $user->name  &&
+                    $body['recipient']['address1'] == $user->preferredLocation->full_address &&
+                    $body['recipient']['city'] == $user->preferredLocation->city &&
+                    $body['recipient']['country_code'] == $user->preferredLocation->country_code &&
+                    $body['recipient']['zip'] == $user->preferredLocation->zip;
             },
-            function (Request $request) {
+            function (Request $request) use ($user) {
                 $body = json_decode($request->body(), true);
 
                 return $request->url() == 'https://api.printful.com/orders' &&
                     $request->method() == 'POST' &&
-                    $body['items'][0]['sync_variant_id'] == 2;
+                    $body['items'][0]['sync_variant_id'] == 2 &&
+                    $body['recipient']['name'] == $user->name  &&
+                    $body['recipient']['address1'] == $user->preferredLocation->full_address &&
+                    $body['recipient']['city'] == $user->preferredLocation->city &&
+                    $body['recipient']['country_code'] == $user->preferredLocation->country_code &&
+                    $body['recipient']['zip'] == $user->preferredLocation->zip;
             }
         ]);
     }
@@ -132,7 +144,9 @@ class CheckoutServiceTest extends TestCase
             ->has(Cart::factory()->hasOrders())
         ->createQuietly();
 
-        $user = User::factory()->create();
+        $user = User::factory()->withPreferredLocation()->create();
+        $user->load('preferredLocation');
+
         $cart = $user->cart;
 
         $order1 = Order::factory()
@@ -173,19 +187,29 @@ class CheckoutServiceTest extends TestCase
         $this->assertNull($order2->printful_order_id);
 
         Http::assertSentInOrder([
-            function (Request $request) {
+            function (Request $request) use ($user) {
                 $body = json_decode($request->body(), true);
 
                 return $request->url() == 'https://api.printful.com/orders' &&
                     $request->method() == 'POST' &&
-                    $body['items'][0]['sync_variant_id'] == 1;
+                    $body['items'][0]['sync_variant_id'] == 1 &&
+                    $body['recipient']['name'] == $user->name  &&
+                    $body['recipient']['address1'] == $user->preferredLocation->full_address &&
+                    $body['recipient']['city'] == $user->preferredLocation->city &&
+                    $body['recipient']['country_code'] == $user->preferredLocation->country_code &&
+                    $body['recipient']['zip'] == $user->preferredLocation->zip;
             },
-            function (Request $request) {
+            function (Request $request) use ($user) {
                 $body = json_decode($request->body(), true);
 
                 return $request->url() == 'https://api.printful.com/orders' &&
                     $request->method() == 'POST' &&
-                    $body['items'][0]['sync_variant_id'] == 2;
+                    $body['items'][0]['sync_variant_id'] == 2 &&
+                    $body['recipient']['name'] == $user->name  &&
+                    $body['recipient']['address1'] == $user->preferredLocation->full_address &&
+                    $body['recipient']['city'] == $user->preferredLocation->city &&
+                    $body['recipient']['country_code'] == $user->preferredLocation->country_code &&
+                    $body['recipient']['zip'] == $user->preferredLocation->zip;
             }
         ]);
     }

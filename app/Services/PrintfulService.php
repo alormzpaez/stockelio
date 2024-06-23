@@ -35,7 +35,7 @@ class PrintfulService
             'Authorization' => 'Bearer ' . config('printful.key'),
             'X-PF-Language' => 'es_ES',
         ])->post('https://api.printful.com/orders', [
-            'recipient' => $user->personalData,
+            'recipient' => $this->getRecipientFromPreferredLocation($user->id),
             'items' => [
                 [
                     'sync_variant_id' => $printfulVariantId,
@@ -49,5 +49,21 @@ class PrintfulService
         }
 
         return $response->json();
+    }
+
+    /**
+     * Transform the preferred location of user to an understandable format for Printful.
+     */
+    private function getRecipientFromPreferredLocation(int $userId): array
+    {
+        $user = User::with('preferredLocation')->find($userId);
+
+        return [
+            'name' => $user->name,
+            'address1' => $user->preferredLocation->full_address,
+            'city' => $user->preferredLocation->city,
+            'country_code' => $user->preferredLocation->country_code,
+            'zip' => $user->preferredLocation->zip,
+        ];
     }
 }

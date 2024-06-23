@@ -20,19 +20,6 @@ class UserTest extends TestCase
         $this->assertInstanceOf(Cart::class, $user->cart);
     }
 
-    public function test_personal_data(): void
-    {
-        $user = User::factory()->create();
-
-        $this->assertIsArray($user->personalData);
-        $this->assertEquals($user->personalData['name'], $user->name);
-        $this->assertEquals($user->personalData['address1'], $user->address1);
-        $this->assertEquals($user->personalData['city'], $user->city);
-        $this->assertEquals($user->personalData['state_code'], $user->state_code);
-        $this->assertEquals($user->personalData['country_code'], $user->country_code);
-        $this->assertEquals($user->personalData['zip'], $user->zip);
-    }
-
     public function test_has_many_locations(): void
     {
         $user = User::factory()->hasLocations(2)->create();
