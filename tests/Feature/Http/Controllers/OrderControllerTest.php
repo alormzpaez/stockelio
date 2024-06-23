@@ -31,10 +31,46 @@ class OrderControllerTest extends TestCase
         $this->delete("{$this->url}/{$order->id}")->assertRedirect(route('login')); // destroy
     }
 
-    public function test_user(): void
+    public function test_user_without_contact_details_filled(): void
     {
-        $order = Order::factory()->create();
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs($user = User::factory()
+            ->has(Cart::factory()->hasOrders())
+        ->createQuietly());
+
+        $order = $user->cart->orders->get(0);
+        $order->load('variant');
+
+        $this->get(route('products.show', $order->variant->product_id))->assertOk();
+
+        $this->get($this->url)->assertOk(); // index
+        $this->get("{$this->url}/{$order->id}")->assertOk(); // show
+        $this->get("{$this->url}/create")->assertNotFound(); // create
+
+        $this->get(route('products.show', $order->variant->product_id))->assertOk();
+        $this->post($this->url)
+            ->assertRedirect(route('products.show', $order->variant->product_id))
+            ->assertSessionHas('type', 'error')
+        ->assertSessionHas('message', 'Es necesario llenar los datos de teléfono y de dirección primero.'); // post
+
+        $this->get("{$this->url}/edit")->assertNotFound(); // edit
+
+        $this->get(route('carts.show', $user->cart->id))->assertOk();
+        $this->put("{$this->url}/{$order->id}")
+            ->assertRedirect(route('carts.show', $user->cart->id))
+            ->assertSessionHas('type', 'error')
+        ->assertSessionHas('message', 'Es necesario llenar los datos de teléfono y de dirección primero.'); // update
+        
+        $this->delete("{$this->url}/{$order->id}")->assertRedirect(); // destroy
+    }
+
+    public function test_user_with_contact_details_filled(): void
+    {
+        Sanctum::actingAs($user = User::factory()
+            ->has(Cart::factory()->hasOrders())
+            ->withContactDetails()
+        ->createQuietly());
+
+        $order = $user->cart->orders->get(0);
 
         $this->get($this->url)->assertOk(); // index
         $this->get("{$this->url}/{$order->id}")->assertOk(); // show
@@ -136,7 +172,7 @@ class OrderControllerTest extends TestCase
 
     public function test_store(): void
     {
-        Sanctum::actingAs($user = User::factory()->create());
+        Sanctum::actingAs($user = User::factory()->withContactDetails()->create());
         $cart = $user->cart;
         $cart->load('orders');
         $variant = Variant::factory()->create();
@@ -164,7 +200,7 @@ class OrderControllerTest extends TestCase
     public function test_store_invalid(): void
     {
         $variant = Variant::factory()->create();
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->withContactDetails()->create());
         
         $this->get(route('products.show', $variant->product_id))->assertOk();
 
@@ -250,6 +286,7 @@ class OrderControllerTest extends TestCase
             ->has(Cart::factory()->has(Order::factory()->state([
                 'quantity' => 1,
             ])))
+            ->withContactDetails()
         ->createQuietly());
 
         $order = Order::first();
@@ -273,8 +310,12 @@ class OrderControllerTest extends TestCase
 
     public function test_update_invalid(): void
     {
-        $order = Order::factory()->create();
-        Sanctum::actingAs($user = User::factory()->create());
+        Sanctum::actingAs($user = User::factory()
+            ->has(Cart::factory()->hasOrders())
+            ->withContactDetails()
+        ->createQuietly());
+
+        $order = $user->cart->orders->get(0);
         
         $this->get(route('carts.show', $user->cart->id))->assertOk();
 

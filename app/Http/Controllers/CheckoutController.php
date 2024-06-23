@@ -31,8 +31,8 @@ class CheckoutController extends Controller
         ])->toArray();
 
         return $request->user()->checkout($orders, [
-            'success_url' => route('checkout-success').'?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url' => route('checkout-cancel'),
+            'success_url' => route('checkout.success').'?session_id={CHECKOUT_SESSION_ID}',
+            'cancel_url' => route('checkout.cancel'),
         ]);
     }
 
@@ -41,23 +41,23 @@ class CheckoutController extends Controller
         $sessionId = $request->get('session_id');
  
         if ($sessionId === null) {
-            return to_route('checkout-cancel');
+            return to_route('checkout.cancel');
         }
         
         $session = Cashier::stripe()->checkout->sessions->retrieve($sessionId);
  
         if ($session->payment_status !== 'paid') {
-            return to_route('checkout-cancel');
+            return to_route('checkout.cancel');
         }
         
         try {
             $response = $this->checkoutService->executeSuccess($request->user()->id);
 
             if (!$response) {
-                return to_route('checkout-cancel');
+                return to_route('checkout.cancel');
             }
         } catch (\Throwable $th) {
-            return to_route('checkout-cancel');
+            return to_route('checkout.cancel');
         }
 
         $request->session()->flash('message', 'Tus ordenes pendientes han sido actualizadas.');

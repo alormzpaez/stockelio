@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Location;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -39,6 +40,18 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * This prevents that EnsureContactDetailsAreFilled middleware triggers.
+     */
+    public function withContactDetails(): static
+    {
+        return $this->has(Location::factory()->state([
+            'is_preferred' => true,
+        ]))->state(fn (array $attributes) => [
+            'phone' => fake()->phoneNumber(),
         ]);
     }
 }

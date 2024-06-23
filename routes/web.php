@@ -5,6 +5,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Middleware\EnsureContactDetailsAreFilled;
 use App\PermissionsEnum;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Foundation\Application;
@@ -39,9 +40,13 @@ Route::middleware('auth')->group(function () {
         Authorize::using(PermissionsEnum::UpdateProduct->value)
     ]);
     Route::resource('carts', CartController::class)->only(['show']);
-    Route::resource('orders', OrderController::class)->except(['create', 'edit']);
+    Route::resource('orders', OrderController::class)->only(['index', 'show', 'destroy']);
 
-    Route::get('checkout', [CheckoutController::class, 'checkout'])->name('checkout');
-    Route::get('checkout/success', [CheckoutController::class, 'success'])->name('checkout-success');
-    Route::get('checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout-cancel');
+    Route::middleware(EnsureContactDetailsAreFilled::class)->group(function () {
+        Route::resource('orders', OrderController::class)->only(['store', 'update']);
+
+        Route::get('checkout', [CheckoutController::class, 'checkout'])->name('checkout');
+        Route::get('checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+        Route::get('checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
+    });
 });
