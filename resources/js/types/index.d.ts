@@ -51,6 +51,20 @@ export interface Cart {
     orders: Order[];
 }
 
+export interface Location {
+    id: number;
+    user_id: number;
+    country_name: string;
+    state_name: string;
+    city: string;
+    locality: string;
+    address: string;
+    zip: string;
+    phone: string;
+    full_address: string;
+    is_preferred: boolean;
+}
+
 export interface PaginationInfo<T> {
     current_page: number;
     data: T[];

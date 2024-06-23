@@ -18,9 +18,14 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user()->load([
+            'locations:id,user_id,country_name,state_name,city,locality,address,zip,phone,is_preferred'
+        ]);
+
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
+            'locations' => $user->locations,
         ]);
     }
 

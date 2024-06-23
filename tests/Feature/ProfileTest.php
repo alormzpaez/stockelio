@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -12,13 +14,31 @@ class ProfileTest extends TestCase
 
     public function test_profile_page_is_displayed(): void
     {
-        $user = User::factory()->create();
+        Sanctum::actingAs(User::factory()
+            ->hasLocations()
+            ->withPreferredLocation()
+        ->create());
 
-        $response = $this
-            ->actingAs($user)
-            ->get('/profile');
-
-        $response->assertOk();
+        $this->get('/profile')
+            ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) =>
+            $page->component('Profile/Edit')
+                ->has('locations', 2, fn (AssertableInertia $page) =>
+                    $page->has('id')
+                        ->has('user_id')
+                        ->has('country_name')
+                        ->has('state_name')
+                        ->has('city')
+                        ->has('locality')
+                        ->has('address')
+                        ->has('zip')
+                        ->has('phone')
+                        ->has('full_address')
+                    ->has('is_preferred')
+                )
+                ->has('mustVerifyEmail')
+            ->has('status')
+        );
     }
 
     public function test_profile_information_can_be_updated(): void
