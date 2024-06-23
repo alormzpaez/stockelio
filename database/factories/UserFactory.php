@@ -44,14 +44,12 @@ class UserFactory extends Factory
     }
 
     /**
-     * This prevents that EnsureContactDetailsAreFilled middleware triggers.
+     * This prevents that EnsurePreferredLocationIsSet middleware triggers.
      */
-    public function withContactDetails(): static
+    public function withPreferredLocation(): static
     {
         return $this->has(Location::factory()->state([
             'is_preferred' => true,
-        ]))->state(fn (array $attributes) => [
-            'phone' => fake()->phoneNumber(),
-        ]);
+        ]));
     }
 }

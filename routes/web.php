@@ -5,7 +5,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Middleware\EnsureContactDetailsAreFilled;
+use App\Http\Middleware\EnsurePreferredLocationIsSet;
 use App\PermissionsEnum;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Foundation\Application;
@@ -42,7 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('carts', CartController::class)->only(['show']);
     Route::resource('orders', OrderController::class)->only(['index', 'show', 'destroy']);
 
-    Route::middleware(EnsureContactDetailsAreFilled::class)->group(function () {
+    Route::middleware(EnsurePreferredLocationIsSet::class)->group(function () {
         Route::resource('orders', OrderController::class)->only(['store', 'update']);
 
         Route::get('checkout', [CheckoutController::class, 'checkout'])->name('checkout');

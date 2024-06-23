@@ -38,20 +38,20 @@ class CheckoutControllerTest extends TestCase
         $this->get($this->url)
             ->assertRedirect(route('carts.show', $user->cart->id))
             ->assertSessionHas('type', 'error')
-        ->assertSessionHas('message', 'Es necesario llenar los datos de teléfono y de dirección primero.');
+        ->assertSessionHas('message', 'Es necesario llenar los datos de dirección primero.');
         $this->get("{$this->url}/success")
             ->assertRedirect(route('carts.show', $user->cart->id))
             ->assertSessionHas('type', 'error')
-        ->assertSessionHas('message', 'Es necesario llenar los datos de teléfono y de dirección primero.');
+        ->assertSessionHas('message', 'Es necesario llenar los datos de dirección primero.');
         $this->get("{$this->url}/cancel")
             ->assertRedirect(route('carts.show', $user->cart->id))
             ->assertSessionHas('type', 'error')
-        ->assertSessionHas('message', 'Es necesario llenar los datos de teléfono y de dirección primero.');
+        ->assertSessionHas('message', 'Es necesario llenar los datos de dirección primero.');
     }
 
     public function test_checkout_cancel(): void
     {
-        Sanctum::actingAs($user = User::factory()->withContactDetails()->create());
+        Sanctum::actingAs($user = User::factory()->withPreferredLocation()->create());
 
         $this->get(route('checkout.cancel'))
             ->assertRedirect(route('carts.show', $user->cart->id))
@@ -63,7 +63,7 @@ class CheckoutControllerTest extends TestCase
     {
         $this->withoutExceptionHandling();
 
-        Sanctum::actingAs($user = User::factory()->withContactDetails()->create());
+        Sanctum::actingAs($user = User::factory()->withPreferredLocation()->create());
 
         $this->get(route('checkout'))
             ->assertRedirect(route('carts.show', $user->cart->id))
@@ -73,7 +73,7 @@ class CheckoutControllerTest extends TestCase
 
     public function test_checkout_success_error_trying_to_get_in_directly(): void
     {
-        Sanctum::actingAs(User::factory()->withContactDetails()->create());
+        Sanctum::actingAs(User::factory()->withPreferredLocation()->create());
 
         $this->get(route('checkout.success'))->assertRedirect(route('checkout.cancel'));
     }

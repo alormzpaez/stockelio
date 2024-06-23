@@ -26,6 +26,7 @@ class LocationFactory extends Factory
             'locality' => fake()->word(),
             'address' => fake()->streetAddress(),
             'zip' => fake()->postcode(),
+            'phone' => fake()->e164PhoneNumber(),
         ];
     }
 }

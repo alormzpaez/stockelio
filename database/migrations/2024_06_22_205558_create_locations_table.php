@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('locality');
             $table->text('address'); // with number
             $table->string('zip');
+            $table->string('phone');
             $table->boolean('is_preferred')->default(false);
             $table->timestamps();
         });
