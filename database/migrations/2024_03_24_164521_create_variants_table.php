@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->float('retail_price');
             $table->string('currency');
-            $table->unsignedBigInteger('printful_variant_id')->unique();
+            $table->unsignedBigInteger('printful_sync_variant_id')->unique();
             $table->string('stripe_price_id');
             $table->timestamps();
         });

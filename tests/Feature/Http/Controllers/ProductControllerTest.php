@@ -117,7 +117,7 @@ class ProductControllerTest extends TestCase
                     ->has('thumbnail_url')
                     ->has('description')
                     ->has('stripe_product_id')
-                    ->has('printful_product_id')
+                    ->has('printful_sync_product_id')
                     ->has('created_at')
                     ->has('updated_at')
                     ->has('cheapest_variant', fn (AssertableInertia $page) =>
@@ -169,7 +169,7 @@ class ProductControllerTest extends TestCase
                     ->has('thumbnail_url')
                     ->has('description')
                     ->has('stripe_product_id')
-                    ->has('printful_product_id')
+                    ->has('printful_sync_product_id')
                     ->has('created_at')
                     ->has('updated_at')
                     ->has('cheapest_variant', fn (AssertableInertia $page) =>

@@ -10,12 +10,12 @@ class PrintfulService
     /**
      * Returns the sync product.
      */
-    public function getASyncProduct(int $printfulProductId): array
+    public function getASyncProduct(int $printfulSyncProductId): array
     {
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('printful.key'),
             'X-PF-Language' => 'es_ES',
-        ])->get('https://api.printful.com/store/products/' . $printfulProductId);
+        ])->get('https://api.printful.com/store/products/' . $printfulSyncProductId);
 
         if ($response->status() != 200) {
             throw new \Exception('Error getting the sync product from printful.');
@@ -27,7 +27,7 @@ class PrintfulService
     /**
      * Returns the order.
      */
-    public function createANewOrder(int $userId, int $printfulVariantId, int $quantity): array
+    public function createANewOrder(int $userId, int $printfulSyncVariantId, int $quantity): array
     {
         $user = User::find($userId);
 
@@ -38,7 +38,7 @@ class PrintfulService
             'recipient' => $this->getRecipientFromPreferredLocation($user->id),
             'items' => [
                 [
-                    'sync_variant_id' => $printfulVariantId,
+                    'sync_variant_id' => $printfulSyncVariantId,
                     'quantity' => $quantity,
                 ]
             ]

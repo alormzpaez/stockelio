@@ -31,7 +31,7 @@ class PrintfulWebhookController extends Controller
                 $productRequest = $request->validated('data')['sync_product'];
 
                 if (!(
-                    $product = Product::where('printful_product_id', $productRequest['id'])->first()
+                    $product = Product::where('printful_sync_product_id', $productRequest['id'])->first()
                 )) {
                     $response = $this->stripeService->createAProduct($productRequest['name']);
 
@@ -42,10 +42,10 @@ class PrintfulWebhookController extends Controller
                         ]),
                         'description' => '',
                         'stripe_product_id' => $response['id'],
-                        'printful_product_id' => $productRequest['id'],
+                        'printful_sync_product_id' => $productRequest['id'],
                     ]);
 
-                    $response = $this->printfulService->getASyncProduct($product->printful_product_id);
+                    $response = $this->printfulService->getASyncProduct($product->printful_sync_product_id);
 
                     $variantsRequest = $response['result']['sync_variants'];
 
@@ -61,7 +61,7 @@ class PrintfulWebhookController extends Controller
                             'currency' => $variantRequest['currency'],
                             'retail_price' => doubleval($variantRequest['retail_price']),
                             'stripe_price_id' => $response['id'],
-                            'printful_variant_id' => $variantRequest['id'],
+                            'printful_sync_variant_id' => $variantRequest['id'],
                         ]);
                     }
                 } else {

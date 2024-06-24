@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->text('thumbnail_url')->nullable();
             $table->text('description');
-            $table->unsignedBigInteger('printful_product_id')->unique();
+            $table->unsignedBigInteger('printful_sync_product_id')->unique();
             $table->text('stripe_product_id');
             $table->timestamps();
         });

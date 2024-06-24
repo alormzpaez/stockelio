@@ -21,7 +21,7 @@ class Product extends Model
         'name',
         'thumbnail_url',
         'description',
-        'printful_product_id',
+        'printful_sync_product_id',
         'stripe_product_id',
     ];
 

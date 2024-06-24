@@ -24,7 +24,7 @@ class CheckoutService
             try {
                 $response = $printfulService->createANewOrder(
                     $user->id,
-                    $order->variant->printful_variant_id,
+                    $order->variant->printful_sync_variant_id,
                     $order->quantity
                 );
             } catch (\Exception $e) {

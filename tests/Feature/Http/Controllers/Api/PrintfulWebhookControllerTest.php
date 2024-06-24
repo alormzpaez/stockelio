@@ -87,7 +87,7 @@ class PrintfulWebhookControllerTest extends TestCase
                 'thumbnail_url',
             ]),
             'description' => '',
-            'printful_product_id' => $syncProduct['id'],
+            'printful_sync_product_id' => $syncProduct['id'],
             'stripe_product_id' => $stripeProductBody['id'],
         ]);
         $this->assertDatabaseMissing('products', Arr::only($syncProduct, 'id'));
@@ -98,7 +98,7 @@ class PrintfulWebhookControllerTest extends TestCase
             'name' => $printfulProductBody['result']['sync_variants'][0]['name'],
             'retail_price' => 29.99,
             'product_id' => $product->id,
-            'printful_variant_id' => $printfulProductBody['result']['sync_variants'][0]['id'],
+            'printful_sync_variant_id' => $printfulProductBody['result']['sync_variants'][0]['id'],
             'stripe_price_id' => $stripePriceBody['id'],
         ]);
         $this->assertDatabaseHas('variants', [
@@ -106,7 +106,7 @@ class PrintfulWebhookControllerTest extends TestCase
             'name' => $printfulProductBody['result']['sync_variants'][1]['name'],
             'retail_price' => 39.99,
             'product_id' => $product->id,
-            'printful_variant_id' => $printfulProductBody['result']['sync_variants'][1]['id'],
+            'printful_sync_variant_id' => $printfulProductBody['result']['sync_variants'][1]['id'],
             'stripe_price_id' => $stripePriceBody['id'],
         ]);
         $this->assertDatabaseMissing('variants', Arr::only(
@@ -166,7 +166,7 @@ class PrintfulWebhookControllerTest extends TestCase
                 'thumbnail_url',
             ]),
             'description' => '',
-            'printful_product_id' => $syncProduct['id'],
+            'printful_sync_product_id' => $syncProduct['id'],
             'stripe_product_id' => $stripeProductBody['id'],
         ]);
         $this->assertDatabaseMissing('products', Arr::only($syncProduct, 'id'));
@@ -176,14 +176,14 @@ class PrintfulWebhookControllerTest extends TestCase
             'currency' => $printfulProductBody['result']['sync_variants'][0]['currency'],
             'retail_price' => 29.99,
             'product_id' => $product->id,
-            'printful_variant_id' => $printfulProductBody['result']['sync_variants'][0]['id'],
+            'printful_sync_variant_id' => $printfulProductBody['result']['sync_variants'][0]['id'],
             'stripe_price_id' => $stripePriceBody['id'],
         ]);
         $this->assertDatabaseHas('variants', [
             'currency' => $printfulProductBody['result']['sync_variants'][1]['currency'],
             'retail_price' => 39.99,
             'product_id' => $product->id,
-            'printful_variant_id' => $printfulProductBody['result']['sync_variants'][1]['id'],
+            'printful_sync_variant_id' => $printfulProductBody['result']['sync_variants'][1]['id'],
             'stripe_price_id' => $stripePriceBody['id'],
         ]);
         $this->assertDatabaseMissing('variants', Arr::only(

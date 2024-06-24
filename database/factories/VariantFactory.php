@@ -23,7 +23,7 @@ class VariantFactory extends Factory
             'retail_price' => fake()->randomFloat(2, 1, 1000),
             'currency' => fake()->currencyCode(),
             'stripe_price_id' => fake()->text(50),
-            'printful_variant_id' => fake()->unique()->numberBetween(1),
+            'printful_sync_variant_id' => fake()->unique()->numberBetween(1),
         ];
     }
 }

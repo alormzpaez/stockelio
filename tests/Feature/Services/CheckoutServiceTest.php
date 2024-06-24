@@ -61,13 +61,13 @@ class CheckoutServiceTest extends TestCase
         $order1 = Order::factory()
             ->for($cart)
             ->for(Variant::factory()->state([
-                'printful_variant_id' => 1,
+                'printful_sync_variant_id' => 1,
             ]))
         ->create();
         $order2 = Order::factory()
             ->for($cart)
             ->for(Variant::factory()->state([
-                'printful_variant_id' => 2,
+                'printful_sync_variant_id' => 2,
             ]))
         ->create();
 
@@ -152,13 +152,13 @@ class CheckoutServiceTest extends TestCase
         $order1 = Order::factory()
             ->for($cart)
             ->for(Variant::factory()->state([
-                'printful_variant_id' => 1,
+                'printful_sync_variant_id' => 1,
             ]))
         ->create();
         $order2 = Order::factory()
             ->for($cart)
             ->for(Variant::factory()->state([
-                'printful_variant_id' => 2,
+                'printful_sync_variant_id' => 2,
             ]))
         ->create();
 
