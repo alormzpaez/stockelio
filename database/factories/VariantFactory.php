@@ -24,6 +24,7 @@ class VariantFactory extends Factory
             'currency' => fake()->currencyCode(),
             'stripe_price_id' => fake()->text(50),
             'printful_sync_variant_id' => fake()->unique()->numberBetween(1),
+            'printful_variant_id' => fake()->numberBetween(1),
         ];
     }
 }

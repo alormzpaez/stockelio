@@ -99,6 +99,7 @@ class PrintfulWebhookControllerTest extends TestCase
             'retail_price' => 29.99,
             'product_id' => $product->id,
             'printful_sync_variant_id' => $printfulProductBody['result']['sync_variants'][0]['id'],
+            'printful_variant_id' => $printfulProductBody['result']['sync_variants'][0]['variant_id'],
             'stripe_price_id' => $stripePriceBody['id'],
         ]);
         $this->assertDatabaseHas('variants', [
@@ -107,6 +108,7 @@ class PrintfulWebhookControllerTest extends TestCase
             'retail_price' => 39.99,
             'product_id' => $product->id,
             'printful_sync_variant_id' => $printfulProductBody['result']['sync_variants'][1]['id'],
+            'printful_variant_id' => $printfulProductBody['result']['sync_variants'][1]['variant_id'],
             'stripe_price_id' => $stripePriceBody['id'],
         ]);
         $this->assertDatabaseMissing('variants', Arr::only(

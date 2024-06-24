@@ -62,6 +62,7 @@ class PrintfulWebhookController extends Controller
                             'retail_price' => doubleval($variantRequest['retail_price']),
                             'stripe_price_id' => $response['id'],
                             'printful_sync_variant_id' => $variantRequest['id'],
+                            'printful_variant_id' => $variantRequest['variant_id'],
                         ]);
                     }
                 } else {

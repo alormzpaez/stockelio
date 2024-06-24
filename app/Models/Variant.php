@@ -22,6 +22,7 @@ class Variant extends Model
         'retail_price',
         'currency',
         'printful_sync_variant_id',
+        'printful_variant_id',
         'stripe_price_id',
     ];
 
