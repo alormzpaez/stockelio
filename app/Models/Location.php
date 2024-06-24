@@ -36,6 +36,14 @@ class Location extends Model
      */
     protected $fillable = [
         'is_preferred',
+        'country_name',
+        'country_code',
+        'state_name',
+        'city',
+        'locality',
+        'address',
+        'zip',
+        'phone',
     ];
 
     /**

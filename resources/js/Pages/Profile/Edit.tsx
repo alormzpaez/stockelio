@@ -2,7 +2,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import DeleteUserForm from "./Partials/DeleteUserForm";
 import UpdatePasswordForm from "./Partials/UpdatePasswordForm";
 import UpdateProfileInformationForm from "./Partials/UpdateProfileInformationForm";
-import { Head } from "@inertiajs/react";
+import { Head, router } from "@inertiajs/react";
 import { PageProps, Location } from "@/types";
 import { Button } from "flowbite-react";
 import { HiPlus } from "react-icons/hi";
@@ -77,7 +77,9 @@ export default function Edit({
                             )}
 
                             <div className="flex items-center gap-4">
-                                <Button color={"blue"} disabled={false}>
+                                <Button onClick={() =>
+                                    router.visit(route("locations.create"))
+                                } color={"blue"} disabled={false}>
                                     <HiPlus className="w-5 h-5 mr-2" />
                                     Agregar una dirección
                                 </Button>
