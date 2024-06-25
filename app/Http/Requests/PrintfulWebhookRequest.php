@@ -28,6 +28,7 @@ class PrintfulWebhookRequest extends FormRequest
                 'string',
                 Rule::in([
                     'product_updated',
+                    'package_shipped',
                 ]),
             ],
             'created' => 'required|numeric',

@@ -2,13 +2,16 @@
 
 namespace Tests\Feature\Http\Controllers\Api;
 
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Variant;
+use App\Notifications\PackageShipped;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class PrintfulWebhookControllerTest extends TestCase
@@ -379,5 +382,122 @@ class PrintfulWebhookControllerTest extends TestCase
 
         $this->assertDatabaseEmpty('products');
         $this->assertDatabaseEmpty('variants');
+    }
+
+    public function test_package_shipped(): void
+    {
+        Notification::fake();
+
+        $order = Order::factory()
+            ->hasShippingBreakdown()
+        ->create([
+            'printful_order_id' => 13,
+        ]);
+
+        $user = $order->cart->user;
+
+        // Printful brings this data
+        $data = [
+            'type' => 'package_shipped',
+            'created' => 1622456737,
+            'retries' => 2,
+            'store' => 12,
+            'data' => [
+                'shipment' => [
+                    'id' => 10,
+                    'carrier' => 'FEDEX',
+                    'service' => 'FedEx SmartPost',
+                    'tracking_number' => 0,
+                    'tracking_url' => 'https://www.fedex.com/fedextrack/?tracknumbers=0000000000',
+                    'created' => 1588716060,
+                    'ship_date' => '2020-05-05',
+                    'shipped_at' => 1588716060,
+                    'reshipment' => false,
+                    'items' => [
+                        [
+                            'item_id' => 1,
+                            'quantity' => 1,
+                            'picked' => 1,
+                            'printed' => 1
+                        ]
+                    ]
+                ],
+                'order' => [
+                    'id' => 13,
+                    // ... more data of order
+                ]
+            ],
+        ];
+
+        $this->postJson($this->endpoint, $data)->assertOk();
+
+        $order->load('shippingBreakdown');
+
+        $this->assertEquals($order->shippingBreakdown->carrier, $data['data']['shipment']['carrier']);
+        $this->assertEquals($order->shippingBreakdown->service, $data['data']['shipment']['service']);
+        $this->assertEquals($order->shippingBreakdown->tracking_url, $data['data']['shipment']['tracking_url']);
+        $this->assertEquals($order->shippingBreakdown->ship_date, $data['data']['shipment']['ship_date']);
+
+        Notification::assertSentTo($user, fn (PackageShipped $notification) =>
+            $notification->order->id == $order->id
+        );
+        Notification::assertSentToTimes($user, PackageShipped::class, 1);
+    }
+
+    public function test_package_shipped_with_error_treating_with_empty_data(): void
+    {
+        Notification::fake();
+
+        $order = Order::factory()
+            ->hasShippingBreakdown()
+        ->create([
+            'printful_order_id' => 13,
+        ]);
+
+        $user = $order->cart->user;
+
+        // Printful brings this data
+        $data = [
+            'type' => 'package_shipped',
+            'created' => 1622456737,
+            'retries' => 2,
+            'store' => 12,
+            'data' => [
+                'shipment' => [
+                    'id' => 10,
+                    'carrier' => 'FEDEX',
+                    'service' => 'FedEx SmartPost',
+                    'tracking_number' => 0,
+                    'tracking_url' => 'https://www.fedex.com/fedextrack/?tracknumbers=0000000000',
+                    'created' => 1588716060,
+                    'ship_date' => '2020-05-05',
+                    'shipped_at' => 1588716060,
+                    'reshipment' => false,
+                    'items' => [
+                        [
+                            'item_id' => 1,
+                            'quantity' => 1,
+                            'picked' => 1,
+                            'printed' => 1
+                        ]
+                    ]
+                ],
+                'order' => [
+                    'id' => null,
+                    // ... more data of order
+                ]
+            ],
+        ];
+
+        $this->postJson($this->endpoint, $data)->assertServerError();
+
+        $order->load('shippingBreakdown');
+
+        $this->assertNotEquals($order->shippingBreakdown->carrier, $data['data']['shipment']['carrier']);
+        $this->assertNotEquals($order->shippingBreakdown->service, $data['data']['shipment']['service']);
+        $this->assertNotEquals($order->shippingBreakdown->tracking_url, $data['data']['shipment']['tracking_url']);
+        $this->assertNotEquals($order->shippingBreakdown->ship_date, $data['data']['shipment']['ship_date']);
+
+        Notification::assertNothingSent();
     }
 }

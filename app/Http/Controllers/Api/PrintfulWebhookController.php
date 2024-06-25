@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PrintfulWebhookRequest;
+use App\Models\Order;
 use App\Models\Product;
+use App\Notifications\PackageShipped;
 use App\Services\PrintfulService;
 use App\Services\StripeService;
 use Illuminate\Http\Request;
@@ -69,6 +71,22 @@ class PrintfulWebhookController extends Controller
                     // Just update the new data for the product
                     $product->update(Arr::only($productRequest, 'thumbnail_url'));
                 }
+            } else if ($request->validated('type') == 'package_shipped') {
+                $shipmentRequest = $request->validated('data')['shipment'];
+                $orderRequest = $request->validated('data')['order'];
+
+                $order = Order::with('cart.user')
+                    ->where('printful_order_id', $orderRequest['id'])
+                ->first();
+
+                $order->shippingBreakdown()->update([
+                    'carrier' => $shipmentRequest['carrier'],
+                    'service' => $shipmentRequest['service'],
+                    'tracking_url' => $shipmentRequest['tracking_url'],
+                    'ship_date' => $shipmentRequest['ship_date'],
+                ]);
+
+                $order->cart->user->notify(new PackageShipped($order));
             }
         } catch (\Exception $e) {
             DB::rollBack();
