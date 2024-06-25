@@ -25,6 +25,11 @@ return new class extends Migration
                 'fulfilled', // All items have been shipped successfully
             ])->default('incart');
             $table->unsignedBigInteger('printful_order_id')->nullable()->unique();
+            /**
+             * Each order will have a stripe price (it will include: quantity for retail price of 
+             * variant and shipping rate).
+             */
+            $table->string('stripe_price_id')->unique();
             $table->timestamps();
         });
     }

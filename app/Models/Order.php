@@ -36,6 +36,7 @@ class Order extends Model
         'status',
         'quantity',
         'printful_order_id',
+        'stripe_price_id',
     ];
     
     public function cart(): BelongsTo

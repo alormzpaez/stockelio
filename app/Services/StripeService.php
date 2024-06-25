@@ -38,7 +38,10 @@ class StripeService
             'product' => $stripeProductId,
         ]);
 
-        if ($response->status() != 200) {
+        if (
+            $response->status() != 200 ||
+            empty($response->json())
+        ) {
             throw new \Exception('Error creating price in stripe.');
         }
 

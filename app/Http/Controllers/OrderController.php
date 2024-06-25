@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateOrderRequest;
 use App\Models\Order;
 use App\Models\Variant;
 use App\Services\PrintfulService;
+use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +19,7 @@ class OrderController extends Controller
 {
     public function __construct(
         private PrintfulService $printfulService,
+        private StripeService $stripeService,
     ) {
     }
 
@@ -64,19 +66,15 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        $variant = Variant::find($request->validated('variant_id'));
+        $variant = Variant::with('product')->find($request->validated('variant_id'));
 
         DB::beginTransaction();
-
-        $order = Auth::user()
-            ->cart
-            ->orders()
-        ->create($request->validated());
 
         try {
             $response = $this->printfulService->calculateShippingRate(
                 Auth::user()->id,
-                $order->id
+                $variant->printful_variant_id,
+                $request->validated('quantity')
             );
 
             $index = -1;
@@ -88,12 +86,34 @@ class OrderController extends Controller
                 }
             }
 
+            $rate = floatval($response['result'][$index]['rate']);
+            $minDeliveryDays = $response['result'][$index]['minDeliveryDays'];
+            $maxDeliveryDays = $response['result'][$index]['maxDeliveryDays'];
+            $minDeliveryDate = $response['result'][$index]['minDeliveryDate'];
+            $maxDeliveryDate = $response['result'][$index]['maxDeliveryDate'];
+
+            $orderUnitAmount = ($variant->retail_price * 100) * $request->validated('quantity');
+            $shippingRateUnitAmount = $rate * 100;
+
+            $response = $this->stripeService->createAPrice(
+                'mxn',
+                $orderUnitAmount + $shippingRateUnitAmount,
+                $variant->product->stripe_product_id
+            );
+
+            $order = Auth::user()
+                ->cart
+                ->orders()
+            ->create(array_merge($request->validated(), [
+                'stripe_price_id' => $response['id'],
+            ]));
+
             $order->shippingBreakdown()->create([
-                'rate' => floatval($response['result'][$index]['rate']),
-                'min_delivery_days' => $response['result'][$index]['minDeliveryDays'],
-                'max_delivery_days' => $response['result'][$index]['maxDeliveryDays'],
-                'min_delivery_date' => $response['result'][$index]['minDeliveryDate'],
-                'max_delivery_date' => $response['result'][$index]['maxDeliveryDate'],
+                'rate' => $rate,
+                'min_delivery_days' => $minDeliveryDays,
+                'max_delivery_days' => $maxDeliveryDays,
+                'min_delivery_date' => $minDeliveryDate,
+                'max_delivery_date' => $maxDeliveryDate,
             ]);
         } catch (\Throwable $th) {
             DB::rollBack();

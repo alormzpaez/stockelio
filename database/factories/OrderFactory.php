@@ -22,6 +22,7 @@ class OrderFactory extends Factory
             'cart_id' => Cart::factory(),
             'variant_id' => Variant::factory(),
             'quantity' => fake()->numberBetween(1, 100),
+            'stripe_price_id' => fake()->unique()->text(50),
         ];
     }
 }

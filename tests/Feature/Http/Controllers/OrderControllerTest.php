@@ -185,10 +185,12 @@ class OrderControllerTest extends TestCase
 
     public function test_store(): void
     {
-        $shippingRateBody = json_decode(file_get_contents(base_path('tests/Fixtures/Printful/CalculateShippingRateOkResponse.json')), true);
+        $printfulShippingRateBody = json_decode(file_get_contents(base_path('tests/Fixtures/Printful/CalculateShippingRateOkResponse.json')), true);
+        $stripePriceBody = json_decode(file_get_contents(base_path('tests/Fixtures/Stripe/CreateAPriceOkResponse.json')), true);
 
         Http::fake([
-            'https://api.printful.com/shipping/rates' => Http::response($shippingRateBody, 200),
+            'https://api.printful.com/shipping/rates' => Http::response($printfulShippingRateBody, 200),
+            'https://api.stripe.com/v1/prices' => Http::response($stripePriceBody, 200),
         ]);
 
         Sanctum::actingAs($user = User::factory()
@@ -199,7 +201,9 @@ class OrderControllerTest extends TestCase
         ->create());
         $cart = $user->cart;
         $cart->load('orders');
-        $variant = Variant::factory()->create();
+        $variant = Variant::factory()->create([
+            'retail_price' => 10,
+        ]);
 
         $this->get(route('products.show', $variant->product_id))->assertOk();
 
@@ -209,7 +213,7 @@ class OrderControllerTest extends TestCase
 
         $data = [
             'variant_id' => $variant->id,
-            'quantity' => 1,
+            'quantity' => 2,
         ];
 
         $this->post($this->url, $data)
@@ -226,34 +230,46 @@ class OrderControllerTest extends TestCase
         $this->assertDatabaseCount('orders', 1);
         $this->assertDatabaseCount('shipping_breakdowns', 1);
         $this->assertCount(1, $cart->orders);
+        $this->assertEquals($order->stripe_price_id, $stripePriceBody['id']);
         $this->assertEquals($order->shippingBreakdown->rate, 13.60);
         $this->assertEquals($order->shippingBreakdown->min_delivery_days, 4);
         $this->assertEquals($order->shippingBreakdown->max_delivery_days, 7);
         $this->assertEquals($order->shippingBreakdown->min_delivery_date, '2022-10-17');
         $this->assertEquals($order->shippingBreakdown->max_delivery_date, '2022-10-20');
 
-        Http::assertSent(function (Request $request) use ($user, $order) {
-            $body = json_decode($request->body(), true);
+        Http::assertSentInOrder([
+            function (Request $request) use ($user, $order) {
+                $body = json_decode($request->body(), true);
+    
+                return $request->method() == 'POST' &&
+                    $request->url() == 'https://api.printful.com/shipping/rates' &&
+                    $body['recipient']['address1'] == $user->preferredLocation->full_address &&
+                    $body['recipient']['country_code'] == 'MX' &&
+                    $body['items'][0]['variant_id'] == $order->variant->printful_variant_id &&
+                    $body['items'][0]['quantity'] == $order->quantity &&
+                    $body['currency'] == 'MXN' &&
+                $body['locale'] == 'es_ES';
+            },
+            function (Request $request) use ($variant) {
+                $body = $request->data();
 
-            return $request->method() == 'POST' &&
-                $request->url() == 'https://api.printful.com/shipping/rates' &&
-                $body['recipient']['address1'] == $user->preferredLocation->full_address &&
-                $body['recipient']['country_code'] == 'MX' &&
-                $body['items'][0]['variant_id'] == $order->variant->printful_variant_id &&
-                $body['items'][0]['quantity'] == $order->quantity &&
-                $body['currency'] == 'MXN' &&
-            $body['locale'] == 'es_ES';
-        });
+                return $request->method() == 'POST' &&
+                    $request->url() == 'https://api.stripe.com/v1/prices' &&
+                    $body['currency'] == 'mxn' &&
+                    $body['unit_amount'] == 3360 && // sum of (quantity * retail_price) + shipping rate
+                $body['product'] == $variant->product->stripe_product_id;
+            },
+        ]);
     }
 
     public function test_store_with_error_calculating_shipping_rates(): void
     {
-        $this->withoutExceptionHandling();
-
-        $shippingRateBody = json_decode(file_get_contents(base_path('tests/Fixtures/Printful/CalculateShippingRateOkResponse.json')), true);
+        $printfulShippingRateBody = json_decode(file_get_contents(base_path('tests/Fixtures/Printful/CalculateShippingRateOkResponse.json')), true);
+        $stripePriceBody = json_decode(file_get_contents(base_path('tests/Fixtures/Stripe/CreateAPriceOkResponse.json')), true);
 
         Http::fake([
-            'https://api.printful.com/shipping/rates' => Http::response($shippingRateBody, 400),
+            'https://api.printful.com/shipping/rates' => Http::response($printfulShippingRateBody, 400),
+            'https://api.stripe.com/v1/prices' => Http::response($stripePriceBody, 200),
         ]);
 
         Sanctum::actingAs($user = User::factory()
@@ -264,7 +280,9 @@ class OrderControllerTest extends TestCase
         ->create());
         $cart = $user->cart;
         $cart->load('orders');
-        $variant = Variant::factory()->create();
+        $variant = Variant::factory()->create([
+            'retail_price' => 10,
+        ]);
 
         $this->get(route('products.show', $variant->product_id))->assertOk();
 
@@ -274,7 +292,7 @@ class OrderControllerTest extends TestCase
 
         $data = [
             'variant_id' => $variant->id,
-            'quantity' => 1,
+            'quantity' => 2,
         ];
 
         $this->post($this->url, $data)
@@ -287,18 +305,88 @@ class OrderControllerTest extends TestCase
         $this->assertDatabaseEmpty('shipping_breakdowns');
         $this->assertEmpty($cart->orders);
 
-        Http::assertSent(function (Request $request) use ($user, $variant) {
-            $body = json_decode($request->body(), true);
+        Http::assertSentInOrder([
+            function (Request $request) use ($user, $variant) {
+                $body = json_decode($request->body(), true);
 
-            return $request->method() == 'POST' &&
-                $request->url() == 'https://api.printful.com/shipping/rates' &&
-                $body['recipient']['address1'] == $user->preferredLocation->full_address &&
-                $body['recipient']['country_code'] == 'MX' &&
-                $body['items'][0]['variant_id'] == $variant->printful_variant_id &&
-                $body['items'][0]['quantity'] == 1 &&
-                $body['currency'] == 'MXN' &&
-            $body['locale'] == 'es_ES';
-        });
+                return $request->method() == 'POST' &&
+                    $request->url() == 'https://api.printful.com/shipping/rates' &&
+                    $body['recipient']['address1'] == $user->preferredLocation->full_address &&
+                    $body['recipient']['country_code'] == 'MX' &&
+                    $body['items'][0]['variant_id'] == $variant->printful_variant_id &&
+                    $body['items'][0]['quantity'] == 2 &&
+                    $body['currency'] == 'MXN' &&
+                $body['locale'] == 'es_ES';
+            }
+        ]);
+    }
+
+    public function test_store_with_error_creating_stripe_price(): void
+    {
+        $printfulShippingRateBody = json_decode(file_get_contents(base_path('tests/Fixtures/Printful/CalculateShippingRateOkResponse.json')), true);
+        $stripePriceBody = json_decode(file_get_contents(base_path('tests/Fixtures/Stripe/CreateAPriceOkResponse.json')), true);
+
+        Http::fake([
+            'https://api.printful.com/shipping/rates' => Http::response($printfulShippingRateBody, 200),
+            'https://api.stripe.com/v1/prices' => Http::response($stripePriceBody, 400),
+        ]);
+
+        Sanctum::actingAs($user = User::factory()
+            ->has(Location::factory()->state([
+                'country_code' => 'MX',
+                'is_preferred' => true,
+            ]))
+        ->create());
+        $cart = $user->cart;
+        $cart->load('orders');
+        $variant = Variant::factory()->create([
+            'retail_price' => 10,
+        ]);
+
+        $this->get(route('products.show', $variant->product_id))->assertOk();
+
+        $this->assertDatabaseEmpty('orders');
+        $this->assertDatabaseEmpty('shipping_breakdowns');
+        $this->assertEmpty($cart->orders);
+
+        $data = [
+            'variant_id' => $variant->id,
+            'quantity' => 2,
+        ];
+
+        $this->post($this->url, $data)
+            ->assertValid()
+            ->assertRedirect(route('products.show', $variant->product_id))
+            ->assertSessionHas('message', 'Error calculando los gastos de envío.')
+        ->assertSessionHas('type', 'error');
+
+        $this->assertDatabaseEmpty('orders');
+        $this->assertDatabaseEmpty('shipping_breakdowns');
+        $this->assertEmpty($cart->orders);
+
+        Http::assertSentInOrder([
+            function (Request $request) use ($user, $variant) {
+                $body = json_decode($request->body(), true);
+
+                return $request->method() == 'POST' &&
+                    $request->url() == 'https://api.printful.com/shipping/rates' &&
+                    $body['recipient']['address1'] == $user->preferredLocation->full_address &&
+                    $body['recipient']['country_code'] == 'MX' &&
+                    $body['items'][0]['variant_id'] == $variant->printful_variant_id &&
+                    $body['items'][0]['quantity'] == 2 &&
+                    $body['currency'] == 'MXN' &&
+                $body['locale'] == 'es_ES';
+            },
+            function (Request $request) use ($variant) {
+                $body = $request->data();
+
+                return $request->method() == 'POST' &&
+                    $request->url() == 'https://api.stripe.com/v1/prices' &&
+                    $body['currency'] == 'mxn' &&
+                    $body['unit_amount'] == 3360 && // sum of (quantity * retail_price) + shipping rate
+                $body['product'] == $variant->product->stripe_product_id;
+            },
+        ]);
     }
 
     public function test_store_invalid(): void

@@ -71,10 +71,8 @@ class PrintfulService
     /**
      * Returns the shipping rate for the location of user.
      */
-    public function calculateShippingRate(int $userId, int $orderId): array
+    public function calculateShippingRate(int $userId, int $printfulVariantId, int $quantity): array
     {
-        $order = Order::with('variant')->find($orderId);
-
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('printful.key'),
             'X-PF-Language' => 'es_ES',
@@ -82,8 +80,8 @@ class PrintfulService
             'recipient' => $this->getRecipientFromPreferredLocation($userId),
             'items' => [
                 [
-                    'variant_id' => $order->variant->printful_variant_id,
-                    'quantity' => $order->quantity,
+                    'variant_id' => $printfulVariantId,
+                    'quantity' => $quantity,
                 ]
             ],
             'currency' => 'MXN',
