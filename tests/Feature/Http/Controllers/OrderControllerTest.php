@@ -3,11 +3,14 @@
 namespace Tests\Feature\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\Location;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -17,6 +20,16 @@ class OrderControllerTest extends TestCase
     use RefreshDatabase;
 
     public string $url = '/orders';
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        config([
+            'cashier.secret' => 'test',
+            'printful.key' => 'test',
+        ]);
+    }
 
     public function test_guest(): void
     {
@@ -172,7 +185,18 @@ class OrderControllerTest extends TestCase
 
     public function test_store(): void
     {
-        Sanctum::actingAs($user = User::factory()->withPreferredLocation()->create());
+        $shippingRateBody = json_decode(file_get_contents(base_path('tests/Fixtures/Printful/CalculateShippingRateOkResponse.json')), true);
+
+        Http::fake([
+            'https://api.printful.com/shipping/rates' => Http::response($shippingRateBody, 200),
+        ]);
+
+        Sanctum::actingAs($user = User::factory()
+            ->has(Location::factory()->state([
+                'country_code' => 'MX',
+                'is_preferred' => true,
+            ]))
+        ->create());
         $cart = $user->cart;
         $cart->load('orders');
         $variant = Variant::factory()->create();
@@ -180,6 +204,7 @@ class OrderControllerTest extends TestCase
         $this->get(route('products.show', $variant->product_id))->assertOk();
 
         $this->assertDatabaseEmpty('orders');
+        $this->assertDatabaseEmpty('shipping_breakdowns');
         $this->assertEmpty($cart->orders);
 
         $data = [
@@ -192,9 +217,88 @@ class OrderControllerTest extends TestCase
             ->assertRedirect(route('products.show', $variant->product_id))
         ->assertSessionHas('message', 'Producto agregado a tu carrito.');
 
-        $cart->refresh();
+        $cart->load([
+            'orders.shippingBreakdown',
+            'orders.variant'
+        ]);
+        $order = $cart->orders->get(0);
+
         $this->assertDatabaseCount('orders', 1);
-        $this->assertNotEmpty($cart->orders);
+        $this->assertDatabaseCount('shipping_breakdowns', 1);
+        $this->assertCount(1, $cart->orders);
+        $this->assertEquals($order->shippingBreakdown->rate, 13.60);
+        $this->assertEquals($order->shippingBreakdown->min_delivery_days, 4);
+        $this->assertEquals($order->shippingBreakdown->max_delivery_days, 7);
+        $this->assertEquals($order->shippingBreakdown->min_delivery_date, '2022-10-17');
+        $this->assertEquals($order->shippingBreakdown->max_delivery_date, '2022-10-20');
+
+        Http::assertSent(function (Request $request) use ($user, $order) {
+            $body = json_decode($request->body(), true);
+
+            return $request->method() == 'POST' &&
+                $request->url() == 'https://api.printful.com/shipping/rates' &&
+                $body['recipient']['address1'] == $user->preferredLocation->full_address &&
+                $body['recipient']['country_code'] == 'MX' &&
+                $body['items'][0]['variant_id'] == $order->variant->printful_variant_id &&
+                $body['items'][0]['quantity'] == $order->quantity &&
+                $body['currency'] == 'MXN' &&
+            $body['locale'] == 'es_ES';
+        });
+    }
+
+    public function test_store_with_error_calculating_shipping_rates(): void
+    {
+        $this->withoutExceptionHandling();
+
+        $shippingRateBody = json_decode(file_get_contents(base_path('tests/Fixtures/Printful/CalculateShippingRateOkResponse.json')), true);
+
+        Http::fake([
+            'https://api.printful.com/shipping/rates' => Http::response($shippingRateBody, 400),
+        ]);
+
+        Sanctum::actingAs($user = User::factory()
+            ->has(Location::factory()->state([
+                'country_code' => 'MX',
+                'is_preferred' => true,
+            ]))
+        ->create());
+        $cart = $user->cart;
+        $cart->load('orders');
+        $variant = Variant::factory()->create();
+
+        $this->get(route('products.show', $variant->product_id))->assertOk();
+
+        $this->assertDatabaseEmpty('orders');
+        $this->assertDatabaseEmpty('shipping_breakdowns');
+        $this->assertEmpty($cart->orders);
+
+        $data = [
+            'variant_id' => $variant->id,
+            'quantity' => 1,
+        ];
+
+        $this->post($this->url, $data)
+            ->assertValid()
+            ->assertRedirect(route('products.show', $variant->product_id))
+            ->assertSessionHas('message', 'Error calculando los gastos de envío.')
+        ->assertSessionHas('type', 'error');
+
+        $this->assertDatabaseEmpty('orders');
+        $this->assertDatabaseEmpty('shipping_breakdowns');
+        $this->assertEmpty($cart->orders);
+
+        Http::assertSent(function (Request $request) use ($user, $variant) {
+            $body = json_decode($request->body(), true);
+
+            return $request->method() == 'POST' &&
+                $request->url() == 'https://api.printful.com/shipping/rates' &&
+                $body['recipient']['address1'] == $user->preferredLocation->full_address &&
+                $body['recipient']['country_code'] == 'MX' &&
+                $body['items'][0]['variant_id'] == $variant->printful_variant_id &&
+                $body['items'][0]['quantity'] == 1 &&
+                $body['currency'] == 'MXN' &&
+            $body['locale'] == 'es_ES';
+        });
     }
 
     public function test_store_invalid(): void

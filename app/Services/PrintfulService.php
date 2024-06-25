@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
 
@@ -65,5 +66,37 @@ class PrintfulService
             'country_code' => $user->preferredLocation->country_code,
             'zip' => $user->preferredLocation->zip,
         ];
+    }
+
+    /**
+     * Returns the shipping rate for the location of user.
+     */
+    public function calculateShippingRate(int $userId, int $orderId): array
+    {
+        $order = Order::with('variant')->find($orderId);
+
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . config('printful.key'),
+            'X-PF-Language' => 'es_ES',
+        ])->post('https://api.printful.com/shipping/rates', [
+            'recipient' => $this->getRecipientFromPreferredLocation($userId),
+            'items' => [
+                [
+                    'variant_id' => $order->variant->printful_variant_id,
+                    'quantity' => $order->quantity,
+                ]
+            ],
+            'currency' => 'MXN',
+            'locale' => 'es_ES',
+        ]);
+
+        if (
+            $response->status() != 200 ||
+            empty($response->json())
+        ) {
+            throw new \Exception('Error getting shipping rate for order in printful.');
+        }
+
+        return $response->json();
     }
 }

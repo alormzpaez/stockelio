@@ -1,0 +1,25 @@
+{
+    "code": 200,
+    "result": [
+        {
+            "id": "STANDARD_CARBON_OFFSET",
+            "name": "Standard rate with CO2 offsetting (Estimated delivery: May 20⁠–26) ",
+            "rate": "15.90",
+            "currency": "MXN",
+            "minDeliveryDays": 5,
+            "maxDeliveryDays": 9,
+            "minDeliveryDate": "2022-10-20",
+            "maxDeliveryDate": "2022-10-26"
+        },
+        {
+            "id": "STANDARD",
+            "name": "Flat Rate (Estimated delivery: May 19–24) ",
+            "rate": "13.60",
+            "currency": "MXN",
+            "minDeliveryDays": 4,
+            "maxDeliveryDays": 7,
+            "minDeliveryDate": "2022-10-17",
+            "maxDeliveryDate": "2022-10-20"
+        }
+    ]
+}

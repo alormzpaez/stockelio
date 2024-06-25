@@ -6,14 +6,21 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
 use App\Models\Order;
 use App\Models\Variant;
+use App\Services\PrintfulService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        private PrintfulService $printfulService,
+    ) {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -59,18 +66,47 @@ class OrderController extends Controller
     {
         $variant = Variant::find($request->validated('variant_id'));
 
-        $message = null;
+        DB::beginTransaction();
 
-        if (
-            Auth::user()
-                ->cart
-                ->orders()
-            ->create($request->validated())
-        ) {
-            $message = 'Producto agregado a tu carrito.';
+        $order = Auth::user()
+            ->cart
+            ->orders()
+        ->create($request->validated());
+
+        try {
+            $response = $this->printfulService->calculateShippingRate(
+                Auth::user()->id,
+                $order->id
+            );
+
+            $index = -1;
+
+            foreach ($response['result'] as $key => $shippingRate) {
+                if ($shippingRate['id'] == 'STANDARD') {
+                    $index = $key;
+                    break;
+                }
+            }
+
+            $order->shippingBreakdown()->create([
+                'rate' => floatval($response['result'][$index]['rate']),
+                'min_delivery_days' => $response['result'][$index]['minDeliveryDays'],
+                'max_delivery_days' => $response['result'][$index]['maxDeliveryDays'],
+                'min_delivery_date' => $response['result'][$index]['minDeliveryDate'],
+                'max_delivery_date' => $response['result'][$index]['maxDeliveryDate'],
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            $request->session()->flash('type', 'error');
+            $request->session()->flash('message', 'Error calculando los gastos de envío.');
+
+            return to_route('products.show', $variant->product_id);
         }
 
-        $request->session()->flash('message', $message);
+        DB::commit();
+
+        $request->session()->flash('message', 'Producto agregado a tu carrito.');
 
         return to_route('products.show', $variant->product_id);
     }
