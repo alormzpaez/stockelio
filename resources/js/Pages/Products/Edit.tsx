@@ -9,11 +9,10 @@ import {
     Textarea,
     Toast,
 } from "flowbite-react";
-import { FormEventHandler } from "react";
+import { FormEventHandler, ReactElement } from "react";
 import { HiFire } from "react-icons/hi";
 
-export default function Edit({
-    auth,
+function Edit({
     product,
     flash,
 }: PageProps<{ product: Product }>) {
@@ -34,14 +33,7 @@ export default function Edit({
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Editar producto
-                </h2>
-            }
-        >
+        <>
             <Head title="Editar producto" />
 
             <div className="py-12">
@@ -236,6 +228,12 @@ export default function Edit({
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+Edit.layout = (page: ReactElement<PageProps>) => (
+    <AuthenticatedLayout user={page.props.auth.user} children={page} />
+);
+
+export default Edit

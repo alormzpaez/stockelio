@@ -4,21 +4,14 @@ import { Order, PageProps } from "@/types";
 import ShowableOrderCard from "@/Components/ShowableOrderCard";
 import { Toast } from "flowbite-react";
 import { HiFire, HiX } from "react-icons/hi";
+import { ReactElement } from "react";
 
-export default function Index({
-    auth,
+function Index({
     orders,
     flash,
 }: PageProps<{ orders: Order[] }>) {
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Mis ordenes
-                </h2>
-            }
-        >
+        <>
             <Head title="Mis ordenes" />
 
             <div className="py-12">
@@ -80,6 +73,12 @@ export default function Index({
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+Index.layout = (page: ReactElement<PageProps>) => (
+    <AuthenticatedLayout user={page.props.auth.user} children={page} />
+);
+
+export default Index

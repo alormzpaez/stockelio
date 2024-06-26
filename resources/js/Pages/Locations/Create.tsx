@@ -4,12 +4,12 @@ import { PageProps } from "@/types";
 import {
     Button,
 } from "flowbite-react";
-import { FormEventHandler } from "react";
+import { FormEventHandler, ReactElement } from "react";
 import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
 import InputError from "@/Components/InputError";
 
-export default function Create({ auth }: PageProps) {
+function Create() {
     const { data, setData, post, errors, processing } =
         useForm({
             state_name: "",
@@ -27,14 +27,7 @@ export default function Create({ auth }: PageProps) {
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Crear dirección
-                </h2>
-            }
-        >
+        <>
             <Head title="Crear dirección" />
 
             <div className="py-12">
@@ -219,6 +212,12 @@ export default function Create({ auth }: PageProps) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+Create.layout = (page: ReactElement<PageProps>) => (
+    <AuthenticatedLayout user={page.props.auth.user} children={page} />
+);
+
+export default Create

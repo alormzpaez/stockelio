@@ -4,17 +4,11 @@ import { Cart, PageProps } from "@/types";
 import { Toast } from "flowbite-react";
 import OrderCard from "@/Components/OrderCard";
 import { HiFire, HiX } from "react-icons/hi";
+import { ReactElement } from "react";
 
-export default function Show({ auth, cart, flash }: PageProps<{ cart: Cart }>) {
+function Show({ cart, flash }: PageProps<{ cart: Cart }>) {
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Mi carrito
-                </h2>
-            }
-        >
+        <>
             <Head title="Mi carrito" />
 
             <div className="py-12">
@@ -59,7 +53,7 @@ export default function Show({ auth, cart, flash }: PageProps<{ cart: Cart }>) {
                                                     }
                                                     imgUrl={
                                                         order.variant.product
-                                                            .thumbnail_url
+                                                            .thumbnail_url ?? ''
                                                     }
                                                     quantity={order.quantity}
                                                     retailPrice={
@@ -160,6 +154,12 @@ export default function Show({ auth, cart, flash }: PageProps<{ cart: Cart }>) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+Show.layout = (page: ReactElement<PageProps>) => (
+    <AuthenticatedLayout user={page.props.auth.user} children={page} />
+);
+
+export default Show

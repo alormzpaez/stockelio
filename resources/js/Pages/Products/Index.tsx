@@ -3,13 +3,11 @@ import { Head, router } from '@inertiajs/react';
 import { PageProps, PaginationInfo, Product } from '@/types';
 import { Pagination } from 'flowbite-react';
 import Card from '@/Components/Card';
+import { ReactElement } from 'react';
 
-export default function Index({ auth, products }: PageProps<{ products: PaginationInfo<Product> }>) {
+function Index({ products }: PageProps<{ products: PaginationInfo<Product> }>) {
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={<h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Todos los productos</h2>}
-        >
+        <>
             <Head title="Todos los productos" />
 
             <div className="py-12">
@@ -44,6 +42,12 @@ export default function Index({ auth, products }: PageProps<{ products: Paginati
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+Index.layout = (page: ReactElement<PageProps>) => (
+    <AuthenticatedLayout user={page.props.auth.user} children={page} />
+);
+
+export default Index

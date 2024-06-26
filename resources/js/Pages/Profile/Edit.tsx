@@ -7,9 +7,9 @@ import { PageProps, Location } from "@/types";
 import { Button } from "flowbite-react";
 import { HiPlus } from "react-icons/hi";
 import LocationCard from "@/Components/LocationCard";
+import { ReactElement } from "react";
 
-export default function Edit({
-    auth,
+function Edit({
     mustVerifyEmail,
     status,
     locations,
@@ -19,14 +19,7 @@ export default function Edit({
     locations: Location[];
 }>) {
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Profile
-                </h2>
-            }
-        >
+        <>
             <Head title="Profile" />
 
             <div className="py-12">
@@ -96,6 +89,12 @@ export default function Edit({
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+Edit.layout = (page: ReactElement<PageProps>) => (
+    <AuthenticatedLayout user={page.props.auth.user} children={page} />
+);
+
+export default Edit

@@ -2,13 +2,12 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, router, useForm } from "@inertiajs/react";
 import { PageProps, Product, Variant } from "@/types";
 import { Button, Toast, Label, Select, Carousel } from "flowbite-react";
-import { FormEventHandler, useState } from "react";
+import { FormEventHandler, ReactElement, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { FaCartShopping, FaPencil } from "react-icons/fa6";
 import { HiFire, HiX } from "react-icons/hi";
 
-export default function Show({
-    auth,
+function Show({
     product,
     flash,
     can,
@@ -29,14 +28,7 @@ export default function Show({
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Producto
-                </h2>
-            }
-        >
+        <>
             <Head title="Producto" />
 
             <div className="py-12">
@@ -365,6 +357,12 @@ export default function Show({
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+Show.layout = (page: ReactElement<PageProps>) => (
+    <AuthenticatedLayout user={page.props.auth.user} children={page} />
+);
+
+export default Show

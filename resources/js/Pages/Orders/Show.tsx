@@ -3,17 +3,11 @@ import { Head, router } from "@inertiajs/react";
 import { Order, PageProps } from "@/types";
 import { Button } from "flowbite-react";
 import { FaArrowLeft } from "react-icons/fa";
+import { ReactElement } from "react";
 
-export default function Index({ auth, order }: PageProps<{ order: Order }>) {
+function Show({ order }: PageProps<{ order: Order }>) {
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Mi orden
-                </h2>
-            }
-        >
+        <>
             <Head title="Mi orden" />
 
             <div className="py-12">
@@ -362,6 +356,12 @@ export default function Index({ auth, order }: PageProps<{ order: Order }>) {
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+Show.layout = (page: ReactElement<PageProps>) => (
+    <AuthenticatedLayout user={page.props.auth.user} children={page} />
+);
+
+export default Show

@@ -2,14 +2,13 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head, useForm } from "@inertiajs/react";
 import { Location, PageProps } from "@/types";
 import { Button } from "flowbite-react";
-import { FormEventHandler, useState } from "react";
+import { FormEventHandler, ReactElement, useState } from "react";
 import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
 import InputError from "@/Components/InputError";
 import Modal from "@/Components/Modal";
 
-export default function Edit({ 
-    auth,
+function Edit({ 
     location,
 }: PageProps<{
     location: Location
@@ -49,14 +48,7 @@ export default function Edit({
     };
 
     return (
-        <AuthenticatedLayout
-            user={auth.user}
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Editar dirección
-                </h2>
-            }
-        >
+        <>
             <Head title="Editar dirección" />
 
             <Modal
@@ -270,6 +262,12 @@ export default function Edit({
                     </div>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
+
+Edit.layout = (page: ReactElement<PageProps>) => (
+    <AuthenticatedLayout user={page.props.auth.user} children={page} />
+);
+
+export default Edit

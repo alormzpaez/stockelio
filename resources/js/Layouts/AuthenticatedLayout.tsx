@@ -3,11 +3,12 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link } from '@inertiajs/react';
 import { User } from '@/types';
 import { Button, DarkThemeToggle, Flowbite, Sidebar } from 'flowbite-react';
-import { HiArrowSmRight, HiShoppingBag, HiUser, HiMenu, HiHome } from 'react-icons/hi';
+import { HiArrowSmRight, HiShoppingBag, HiUser, HiMenu, HiHome, HiBell } from 'react-icons/hi';
 import { FaBoxes, FaShoppingCart } from "react-icons/fa";
 import { Avatar } from 'flowbite-react';
 
-export default function Authenticated({ user, header, children }: PropsWithChildren<{ user: User, header?: ReactNode }>) {
+export default function Authenticated({ user, children }: PropsWithChildren<{ user: User }>) {
+    const [incomingNotification, setIncomingNotification] = useState(false);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     return (
@@ -24,6 +25,21 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                                 <DarkThemeToggle />
                             </Flowbite>
                         </div>
+                        <button
+                            onClick={() =>
+                                setIncomingNotification(!incomingNotification)
+                            }
+                            className="mr-2 relative rounded-lg p-2.5 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-700"
+                        >
+                            {incomingNotification ? (
+                                <>
+                                    <HiBell className="text-xl" />
+                                    <div className="absolute right-1.5 top-2 block w-3 h-3 bg-red-500 border-2 border-white rounded-full dark:border-gray-900"></div>
+                                </>
+                            ) : (
+                                <HiBell className="text-xl" />
+                            )}
+                        </button>
                         <Avatar className="cursor-pointer" img="" status="online" statusPosition="bottom-right">
                             <div className="hidden space-y-1 font-medium dark:text-white md:block">
                                 <div>{ user.name }</div>
@@ -35,12 +51,6 @@ export default function Authenticated({ user, header, children }: PropsWithChild
                     </div>
                 </div>
             </nav>
-
-            {/* {header && (
-                <header className="bg-white shadow dark:bg-gray-800">
-                    <div className="px-4 py-6 mx-auto max-w-7xl sm:px-6 lg:px-8">{header}</div>
-                </header>
-            )} */}
 
             <div className='flex flex-col md:flex-row'>
                 <div className={
