@@ -29,7 +29,7 @@ class PackageShipped extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database'];
     }
 
     /**
@@ -51,7 +51,7 @@ class PackageShipped extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'order_id' => $this->order->id,
         ];
     }
 }

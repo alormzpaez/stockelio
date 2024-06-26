@@ -37,4 +37,14 @@ class OrderTest extends TestCase
 
         $this->assertInstanceOf(ShippingBreakdown::class, $order->shippingBreakdown);
     }
+
+    public function test_creating_only_one_child_models_in_factory(): void
+    {
+        Order::factory()->create();
+
+        $this->assertDatabaseCount('users', 1);
+        $this->assertDatabaseCount('carts', 1);
+        $this->assertDatabaseCount('products', 1);
+        $this->assertDatabaseCount('variants', 1);
+    }
 }

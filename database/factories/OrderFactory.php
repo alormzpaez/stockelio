@@ -19,7 +19,7 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         return [
-            'cart_id' => Cart::factory(),
+            'cart_id' => Cart::factory()->createQuietly(),
             'variant_id' => Variant::factory(),
             'quantity' => fake()->numberBetween(1, 100),
             'stripe_price_id' => fake()->unique()->text(50),
