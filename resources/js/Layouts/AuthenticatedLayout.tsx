@@ -1,4 +1,4 @@
-import { useState, PropsWithChildren, ReactNode } from 'react';
+import { useState, PropsWithChildren, ReactNode, useEffect } from 'react';
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link } from '@inertiajs/react';
 import { User } from '@/types';
@@ -8,6 +8,17 @@ import { FaBoxes, FaShoppingCart } from "react-icons/fa";
 import { Avatar } from 'flowbite-react';
 
 export default function Authenticated({ user, children }: PropsWithChildren<{ user: User }>) {
+    useEffect(() => {
+        (window as any).Echo.private(`App.Models.User.${user.id}`)
+            .notification((notification: any) => {
+                console.log(notification);
+            });
+
+        return () => {
+            (window as any).Echo.leave(`App.Models.User.${user.id}`)
+        }
+    }, [])
+
     const [incomingNotification, setIncomingNotification] = useState(false);
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
@@ -59,32 +70,44 @@ export default function Authenticated({ user, children }: PropsWithChildren<{ us
                     <Sidebar aria-label="Sidebar with multi-level dropdown example" className='w-full md:w-56'>
                             <Sidebar.Items className='flex-grow' style={{height: "calc(100vh - 6.1rem)"}}>
                             <Sidebar.ItemGroup>
-                                <Link href={route('profile.edit')}>
+                                <Link onClick={() => {
+                                    setShowingNavigationDropdown(false)
+                                }} href={route('profile.edit')}>
                                     <Sidebar.Item href="#" icon={HiUser}>
                                         Cuenta
                                     </Sidebar.Item>
                                 </Link>
-                                <Link href={route('dashboard')}>
+                                <Link onClick={() => {
+                                    setShowingNavigationDropdown(false)
+                                }} href={route('dashboard')}>
                                     <Sidebar.Item icon={HiHome}>
                                         Dashboard
                                     </Sidebar.Item>
                                 </Link>
-                                <Link href={route('products.index')}>
+                                <Link onClick={() => {
+                                    setShowingNavigationDropdown(false)
+                                }} href={route('products.index')}>
                                     <Sidebar.Item icon={HiShoppingBag}>
                                         Productos
                                     </Sidebar.Item>
                                 </Link>
-                                <Link href={route('carts.show', user.cart.id)}>
+                                <Link onClick={() => {
+                                    setShowingNavigationDropdown(false)
+                                }} href={route('carts.show', user.cart.id)}>
                                     <Sidebar.Item icon={FaShoppingCart}>
                                         Mi carrito
                                     </Sidebar.Item>
                                 </Link>
-                                <Link href={route('orders.index')}>
+                                <Link onClick={() => {
+                                    setShowingNavigationDropdown(false)
+                                }} href={route('orders.index')}>
                                     <Sidebar.Item icon={FaBoxes}>
                                         Mis ordenes
                                     </Sidebar.Item>
                                 </Link>
-                                <Link href={route('logout')} method="post">
+                                <Link onClick={() => {
+                                    setShowingNavigationDropdown(false)
+                                }} href={route('logout')} method="post">
                                     <Sidebar.Item icon={HiArrowSmRight}>
                                         Cerrar sesión
                                     </Sidebar.Item>
