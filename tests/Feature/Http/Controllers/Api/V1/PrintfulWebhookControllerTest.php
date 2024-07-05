@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Http\Controllers\Api;
+namespace Tests\Feature\Http\Controllers\Api\V1;
 
 use App\Models\Order;
 use App\Models\Product;
@@ -18,7 +18,7 @@ class PrintfulWebhookControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-    private string $endpoint = 'api/printful/webhook';
+    private string $endpoint = 'api/v1/printful/webhook';
 
     public function setUp(): void
     {
