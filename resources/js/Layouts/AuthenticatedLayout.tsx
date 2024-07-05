@@ -1,12 +1,11 @@
 import { useState, PropsWithChildren, useEffect } from "react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import { Link } from "@inertiajs/react";
-import { User } from "@/types";
+import { Notification as NotificationType, User } from "@/types";
 import {
     Button,
     DarkThemeToggle,
     Dropdown,
-    DropdownItem,
     Flowbite,
     Sidebar,
 } from "flowbite-react";
@@ -18,8 +17,13 @@ import {
     HiHome,
     HiBell,
 } from "react-icons/hi";
-import { FaBoxes, FaShippingFast, FaShoppingCart } from "react-icons/fa";
+import {
+    FaBoxes,
+    FaShoppingCart,
+    FaSpinner,
+} from "react-icons/fa";
 import { Avatar } from "flowbite-react";
+import Notification from "@/Components/Notification";
 
 export default function Authenticated({
     user,
@@ -27,8 +31,11 @@ export default function Authenticated({
 }: PropsWithChildren<{ user: User }>) {
     useEffect(() => {
         (window as any).Echo.private(`App.Models.User.${user.id}`).notification(
-            (notification: any) => {
-                setIncomingNotification(true);
+            (notification: NotificationType) => {
+                setIncomingNotifications((prevNotifications) => [
+                    ...prevNotifications,
+                    notification,
+                ]);
             }
         );
 
@@ -37,7 +44,9 @@ export default function Authenticated({
         };
     }, []);
 
-    const [incomingNotification, setIncomingNotification] = useState(false);
+    const [incomingNotifications, setIncomingNotifications] = useState<
+        NotificationType[]
+    >([]);
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
@@ -63,7 +72,7 @@ export default function Authenticated({
                             placement="bottom"
                             renderTrigger={() => (
                                 <button className="mr-2 relative rounded-lg p-2.5 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-700">
-                                    {incomingNotification ? (
+                                    {incomingNotifications.length > 0 ? (
                                         <>
                                             <HiBell className="text-xl" />
                                             <div className="absolute right-1.5 top-2 block w-3 h-3 bg-red-500 border-2 border-white rounded-full dark:border-gray-900"></div>
@@ -77,99 +86,75 @@ export default function Authenticated({
                             <Dropdown.Header className="flex justify-center">
                                 Mis notificaciones
                             </Dropdown.Header>
-                            <div className="w-72 md:w-80">
-                                <DropdownItem className="flex items-start px-4 py-3 overflow-hidden border-b border-gray-100 dark:border-gray-600 min-h-14 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                        <div className="flex-shrink-0">
-                                            <Avatar rounded img={() => (
-                                                <FaShippingFast className="text-4xl"/>
-                                            )} />
-                                        </div>
-                                        <div className="w-full text-sm text-left ps-3">
-                                            <div className="font-semibold text-gray-900 dark:text-white">
-                                                Tu orden #1 ya fue enviada
-                                            </div>
-                                            <div className="text-gray-500 mb-1.5 dark:text-gray-400">
-                                                Haz click para rastrear su seguimiento
-                                            </div>
-                                            <div className="text-xs text-blue-600 dark:text-blue-500">
-                                                a few moments ago
-                                            </div>
-                                        </div>
-                                </DropdownItem>
-                                <DropdownItem className="flex items-start px-4 py-3 overflow-hidden border-b border-gray-100 dark:border-gray-600 min-h-14 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                        <div className="flex-shrink-0">
-                                            <Avatar rounded img='https://flowbite.com/docs/images/people/profile-picture-5.jpg' />
-                                            <div className="absolute flex items-center justify-center w-5 h-5 -mt-5 bg-blue-600 border border-white rounded-full ms-6 dark:border-gray-800">
-                                                <svg
-                                                    className="w-2 h-2 text-white"
-                                                    aria-hidden="true"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="currentColor"
-                                                    viewBox="0 0 18 18"
-                                                >
-                                                    <path d="M1 18h16a1 1 0 0 0 1-1v-6h-4.439a.99.99 0 0 0-.908.6 3.978 3.978 0 0 1-7.306 0 .99.99 0 0 0-.908-.6H0v6a1 1 0 0 0 1 1Z" />
-                                                    <path d="M4.439 9a2.99 2.99 0 0 1 2.742 1.8 1.977 1.977 0 0 0 3.638 0A2.99 2.99 0 0 1 13.561 9H17.8L15.977.783A1 1 0 0 0 15 0H3a1 1 0 0 0-.977.783L.2 9h4.239Z" />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div className="w-full text-sm text-left ps-3">
-                                            <div className="font-semibold text-gray-900 dark:text-white">
-                                                Tu orden #1 ya fue enviada
-                                            </div>
-                                            <div className="text-gray-500 mb-1.5 dark:text-gray-400">
-                                                Haz click para rastrear su seguimiento
-                                            </div>
-                                            <div className="text-xs text-blue-600 dark:text-blue-500">
-                                                a few moments ago
-                                            </div>
-                                        </div>
-                                </DropdownItem>
-                                <DropdownItem className="flex items-start px-4 py-3 overflow-hidden border-b border-gray-100 dark:border-gray-600 min-h-14 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                        <div className="flex-shrink-0">
-                                            <Avatar rounded img='https://flowbite.com/docs/images/people/profile-picture-5.jpg' />
-                                            <div className="absolute flex items-center justify-center w-5 h-5 -mt-5 bg-blue-600 border border-white rounded-full ms-6 dark:border-gray-800">
-                                                <svg
-                                                    className="w-2 h-2 text-white"
-                                                    aria-hidden="true"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="currentColor"
-                                                    viewBox="0 0 18 18"
-                                                >
-                                                    <path d="M1 18h16a1 1 0 0 0 1-1v-6h-4.439a.99.99 0 0 0-.908.6 3.978 3.978 0 0 1-7.306 0 .99.99 0 0 0-.908-.6H0v6a1 1 0 0 0 1 1Z" />
-                                                    <path d="M4.439 9a2.99 2.99 0 0 1 2.742 1.8 1.977 1.977 0 0 0 3.638 0A2.99 2.99 0 0 1 13.561 9H17.8L15.977.783A1 1 0 0 0 15 0H3a1 1 0 0 0-.977.783L.2 9h4.239Z" />
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <div className="w-full text-sm text-left ps-3">
-                                            <div className="font-semibold text-gray-900 dark:text-white">
-                                                Tu orden #1 ya fue enviada
-                                            </div>
-                                            <div className="text-gray-500 mb-1.5 dark:text-gray-400">
-                                                Haz click para rastrear su seguimiento
-                                            </div>
-                                            <div className="text-xs text-blue-600 dark:text-blue-500">
-                                                a few moments ago
-                                            </div>
-                                        </div>
-                                </DropdownItem>
-                                <DropdownItem className="flex items-start px-4 py-3 overflow-hidden border-b border-gray-100 dark:border-gray-600 min-h-14 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                        <div className="flex-shrink-0">
-                                            <Avatar rounded img={() => (
-                                                <FaShippingFast className="text-4xl"/>
-                                            )} />
-                                        </div>
-                                        <div className="w-full text-sm text-left ps-3">
-                                            <div className="font-semibold text-gray-900 dark:text-white">
-                                                Tu orden #1 ya fue enviada
-                                            </div>
-                                            <div className="text-gray-500 mb-1.5 dark:text-gray-400">
-                                                Haz click para rastrear su seguimiento
-                                            </div>
-                                            <div className="text-xs text-blue-600 dark:text-blue-500">
-                                                a few moments ago
-                                            </div>
-                                        </div>
-                                </DropdownItem>
+                            <div className="overflow-auto w-72 md:w-80 max-h-96">
+                                <Dropdown.Item className="p-0">
+                                    <Notification
+                                        autoDismiss={false}
+                                        notification={{
+                                            id: "some_id",
+                                            type: "App\\Notifications\\PackageShipped",
+                                            order_id: 1,
+                                        }}
+                                    />
+                                </Dropdown.Item>
+                                <Dropdown.Item className="p-0">
+                                    <Notification
+                                        autoDismiss={false}
+                                        notification={{
+                                            id: "some_id",
+                                            type: "App\\Notifications\\PackageShipped",
+                                            order_id: 1,
+                                        }}
+                                    />
+                                </Dropdown.Item>
+                                <Dropdown.Item className="p-0">
+                                    <Notification
+                                        autoDismiss={false}
+                                        notification={{
+                                            id: "some_id",
+                                            type: "App\\Notifications\\PackageShipped",
+                                            order_id: 1,
+                                        }}
+                                    />
+                                </Dropdown.Item>
+                                <Dropdown.Item className="p-0">
+                                    <Notification
+                                        autoDismiss={false}
+                                        notification={{
+                                            id: "some_id",
+                                            type: "App\\Notifications\\PackageShipped",
+                                            order_id: 1,
+                                        }}
+                                    />
+                                </Dropdown.Item>
+                                <Dropdown.Item className="p-0">
+                                    <Notification
+                                        autoDismiss={false}
+                                        notification={{
+                                            id: "some_id",
+                                            type: "App\\Notifications\\PackageShipped",
+                                            order_id: 1,
+                                        }}
+                                    />
+                                </Dropdown.Item>
+                                <Dropdown.Item className="p-0">
+                                    <Notification
+                                        autoDismiss={false}
+                                        notification={{
+                                            id: "some_id",
+                                            type: "App\\Notifications\\PackageShipped",
+                                            order_id: 1,
+                                        }}
+                                    />
+                                </Dropdown.Item>
+                                <Dropdown.Item className="flex justify-center py-2">
+                                    <svg
+                                        className="w-5 h-5 mr-3 animate-spin"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <FaSpinner className="text-2xl" />
+                                    </svg>
+                                </Dropdown.Item>
                             </div>
                             <Dropdown.Item className="flex justify-center">
                                 Ver todas
@@ -285,6 +270,16 @@ export default function Authenticated({
                 </div>
 
                 <main className="flex-grow overflow-hidden">{children}</main>
+
+                {/* Floating and auto dismiss notifications div */}
+                <div className="fixed flex-col-reverse hidden gap-2 overflow-hidden w-80 max-h-52 bottom-5 right-5 md:flex xl:max-h-72">
+                    {incomingNotifications.map((notification) => (
+                        <Notification
+                            autoDismiss={true}
+                            notification={notification}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );

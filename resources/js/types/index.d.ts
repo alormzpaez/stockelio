@@ -65,6 +65,12 @@ export interface Location {
     is_preferred: boolean;
 }
 
+export interface Notification {
+    id: string;
+    order_id?: number;
+    type: string;
+}
+
 export interface PaginationInfo<T> {
     current_page: number;
     data: T[];
