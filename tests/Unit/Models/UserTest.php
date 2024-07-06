@@ -3,6 +3,7 @@
 namespace Tests\Unit\Models;
 
 use App\Models\Cart;
+use App\Models\Chat;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -68,5 +69,18 @@ class UserTest extends TestCase
 
         $this->assertEquals($user->preferredLocation->id, $location2->id);
         $this->assertCount(1, Location::where('is_preferred', false)->get());
+    }
+
+    public function test_belongs_to_many_chats(): void
+    {
+        $user = User::factory()->create();
+        
+        $this->assertInstanceOf(Collection::class, $user->chats);
+        $this->assertEmpty($user->chats);
+        
+        $user = User::factory()->hasChats()->create();
+
+        $this->assertInstanceOf(Collection::class, $user->chats);
+        $this->assertInstanceOf(Chat::class, $user->chats->get(0));
     }
 }
