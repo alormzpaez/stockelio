@@ -47,7 +47,7 @@ class ChatController extends Controller
             Session::flash('type', 'error');
             Session::flash('message', 'No hay más personal de soporte al cliente para tener una conversación nueva.');
 
-            return back();
+            return to_route('dashboard');
         }
 
         $chat = Chat::create();
