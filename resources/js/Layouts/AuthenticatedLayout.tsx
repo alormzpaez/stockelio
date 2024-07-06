@@ -1,11 +1,10 @@
 import { useState, PropsWithChildren, useEffect } from "react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
-import { Link } from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 import { Notification as NotificationType, User } from "@/types";
 import {
     Button,
     DarkThemeToggle,
-    Dropdown,
     Flowbite,
     Sidebar,
 } from "flowbite-react";
@@ -15,15 +14,12 @@ import {
     HiUser,
     HiMenu,
     HiHome,
-    HiBell,
 } from "react-icons/hi";
-import {
-    FaBoxes,
-    FaShoppingCart,
-    FaSpinner,
-} from "react-icons/fa";
+import { FaBoxes, FaShoppingCart } from "react-icons/fa";
 import { Avatar } from "flowbite-react";
 import Notification from "@/Components/Notification";
+import axios from "axios";
+import NotificationsDropdown from "@/Components/NotificationsDropdown";
 
 export default function Authenticated({
     user,
@@ -32,6 +28,12 @@ export default function Authenticated({
     useEffect(() => {
         (window as any).Echo.private(`App.Models.User.${user.id}`).notification(
             (notification: NotificationType) => {
+                router.reload({
+                    only: ["auth.user.unread_notifications_exists"],
+                });
+
+                getNotifications(null);
+
                 setIncomingNotifications((prevNotifications) => [
                     ...prevNotifications,
                     notification,
@@ -44,11 +46,35 @@ export default function Authenticated({
         };
     }, []);
 
+    const [nextCursor, setNextCursor] = useState(null);
+    const [notifications, setNotifications] = useState<
+        NotificationType[] | null
+    >(null);
     const [incomingNotifications, setIncomingNotifications] = useState<
         NotificationType[]
     >([]);
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+
+    const getNotifications = (cursor: string | null) => {
+        axios
+            .get(`${window.location.origin}/api/v1/notifications?cursor=${cursor}`)
+            .then((response) => {
+                // response.data has props: data, links and meta
+                setNextCursor(response.data.meta.next_cursor);
+
+                if (cursor) {
+                    setNotifications((prevNotifications) => [
+                        ...(prevNotifications ?? []),
+                        ...response.data.data,
+                    ]);
+                } else {
+                    setNotifications(response.data.data);
+                }
+            })
+            .catch((e) => {
+                // console.log(e);
+            });
+    };
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -66,101 +92,18 @@ export default function Authenticated({
                                 <DarkThemeToggle />
                             </Flowbite>
                         </div>
-                        <Dropdown
-                            label=""
-                            inline
-                            placement="bottom"
-                            renderTrigger={() => (
-                                <button className="mr-2 relative rounded-lg p-2.5 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-700">
-                                    {incomingNotifications.length > 0 ? (
-                                        <>
-                                            <HiBell className="text-xl" />
-                                            <div className="absolute right-1.5 top-2 block w-3 h-3 bg-red-500 border-2 border-white rounded-full dark:border-gray-900"></div>
-                                        </>
-                                    ) : (
-                                        <HiBell className="text-xl" />
-                                    )}
-                                </button>
-                            )}
-                        >
-                            <Dropdown.Header className="flex justify-center">
-                                Mis notificaciones
-                            </Dropdown.Header>
-                            <div className="overflow-auto w-72 md:w-80 max-h-96">
-                                <Dropdown.Item className="p-0">
-                                    <Notification
-                                        autoDismiss={false}
-                                        notification={{
-                                            id: "some_id",
-                                            type: "App\\Notifications\\PackageShipped",
-                                            order_id: 1,
-                                        }}
-                                    />
-                                </Dropdown.Item>
-                                <Dropdown.Item className="p-0">
-                                    <Notification
-                                        autoDismiss={false}
-                                        notification={{
-                                            id: "some_id",
-                                            type: "App\\Notifications\\PackageShipped",
-                                            order_id: 1,
-                                        }}
-                                    />
-                                </Dropdown.Item>
-                                <Dropdown.Item className="p-0">
-                                    <Notification
-                                        autoDismiss={false}
-                                        notification={{
-                                            id: "some_id",
-                                            type: "App\\Notifications\\PackageShipped",
-                                            order_id: 1,
-                                        }}
-                                    />
-                                </Dropdown.Item>
-                                <Dropdown.Item className="p-0">
-                                    <Notification
-                                        autoDismiss={false}
-                                        notification={{
-                                            id: "some_id",
-                                            type: "App\\Notifications\\PackageShipped",
-                                            order_id: 1,
-                                        }}
-                                    />
-                                </Dropdown.Item>
-                                <Dropdown.Item className="p-0">
-                                    <Notification
-                                        autoDismiss={false}
-                                        notification={{
-                                            id: "some_id",
-                                            type: "App\\Notifications\\PackageShipped",
-                                            order_id: 1,
-                                        }}
-                                    />
-                                </Dropdown.Item>
-                                <Dropdown.Item className="p-0">
-                                    <Notification
-                                        autoDismiss={false}
-                                        notification={{
-                                            id: "some_id",
-                                            type: "App\\Notifications\\PackageShipped",
-                                            order_id: 1,
-                                        }}
-                                    />
-                                </Dropdown.Item>
-                                <Dropdown.Item className="flex justify-center py-2">
-                                    <svg
-                                        className="w-5 h-5 mr-3 animate-spin"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <FaSpinner className="text-2xl" />
-                                    </svg>
-                                </Dropdown.Item>
-                            </div>
-                            <Dropdown.Item className="flex justify-center">
-                                Ver todas
-                            </Dropdown.Item>
-                        </Dropdown>
-
+                        <NotificationsDropdown 
+                            unreadNotificationsExists={user.unread_notifications_exists}
+                            notifications={notifications}
+                            nextCursor={nextCursor}
+                            onScrollEnd={() => {
+                                getNotifications(nextCursor)
+                            }}
+                            onBeginning={() => {
+                                setNotifications(null)
+                                getNotifications(null)
+                            }}  
+                        />
                         <Avatar
                             className="cursor-pointer"
                             img=""
@@ -273,8 +216,9 @@ export default function Authenticated({
 
                 {/* Floating and auto dismiss notifications div */}
                 <div className="fixed flex-col-reverse hidden gap-2 overflow-hidden w-80 max-h-52 bottom-5 right-5 md:flex xl:max-h-72">
-                    {incomingNotifications.map((notification) => (
+                    {incomingNotifications.map((notification, index) => (
                         <Notification
+                            key={index}
                             autoDismiss={true}
                             notification={notification}
                         />

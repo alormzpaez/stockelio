@@ -12,25 +12,145 @@ class NotificationControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    private string $endpoint = 'api/v1/notifications';
+
     public function test_guest(): void
     {
-        $user = User::factory()->create();
-
-        $this->getJson("api/v1/users/{$user->id}/notifications")->assertUnauthorized(); // index
-        $this->getJson("api/v1/users/{$user->id}/notifications/1")->assertNotFound(); // show
-        $this->postJson("api/v1/users/{$user->id}/notifications")->assertMethodNotAllowed(); // store
-        $this->putJson("api/v1/users/{$user->id}/notifications/1")->assertNotFound(); // update
-        $this->deleteJson("api/v1/users/{$user->id}/notifications/1")->assertNotFound(); // destroy
+        $this->getJson($this->endpoint)->assertUnauthorized(); // index
+        $this->getJson("{$this->endpoint}/1")->assertMethodNotAllowed(); // show
+        $this->postJson($this->endpoint)->assertMethodNotAllowed(); // store
+        $this->putJson("{$this->endpoint}/some-id")->assertUnauthorized(); // update
+        $this->putJson($this->endpoint)->assertUnauthorized(); // update all
+        $this->deleteJson("{$this->endpoint}/1")->assertMethodNotAllowed(); // destroy
     }
 
     public function test_user(): void
     {
-        Sanctum::actingAs($user = User::factory()->create());
+        Sanctum::actingAs(User::factory()->create());
 
-        $this->getJson("api/v1/users/{$user->id}/notifications")->assertOk(); // index
-        $this->getJson("api/v1/users/{$user->id}/notifications/1")->assertNotFound(); // show
-        $this->postJson("api/v1/users/{$user->id}/notifications")->assertMethodNotAllowed(); // store
-        $this->putJson("api/v1/users/{$user->id}/notifications/1")->assertNotFound(); // update
-        $this->deleteJson("api/v1/users/{$user->id}/notifications/1")->assertNotFound(); // destroy
+        $this->getJson($this->endpoint)->assertOk(); // index
+        $this->getJson("{$this->endpoint}/1")->assertMethodNotAllowed(); // show
+        $this->postJson($this->endpoint)->assertMethodNotAllowed(); // store
+        $this->putJson("{$this->endpoint}/some-id")->assertUnprocessable(); // update
+        $this->putJson($this->endpoint)->assertUnprocessable(); // update all
+        $this->deleteJson("{$this->endpoint}/1")->assertMethodNotAllowed(); // destroy
+    }
+
+    public function test_update(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $data = [
+            'is_read' => true
+        ];
+
+        $this->putJson("{$this->endpoint}/some-id", $data)->assertValid();
+    }
+
+    public function test_update_invalid(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $data = [];
+
+        $this->putJson("{$this->endpoint}/some-id", $data)
+        ->assertInvalid([
+            'is_read'
+        ]);
+
+        $data = [
+            'is_read'
+        ];
+
+        $this->putJson("{$this->endpoint}/some-id", $data)
+        ->assertInvalid([
+            'is_read'
+        ]);
+
+        $data = [
+            'is_read' => null
+        ];
+
+        $this->putJson("{$this->endpoint}/some-id", $data)
+        ->assertInvalid([
+            'is_read'
+        ]);
+
+        $data = [
+            'is_read' => ''
+        ];
+
+        $this->putJson("{$this->endpoint}/some-id", $data)
+        ->assertInvalid([
+            'is_read'
+        ]);
+
+        $data = [
+            'is_read' => ' '
+        ];
+
+        $this->putJson("{$this->endpoint}/some-id", $data)
+        ->assertInvalid([
+            'is_read'
+        ]);
+    }
+
+    public function test_update_all(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $data = [
+            'are_read' => true
+        ];
+
+        $this->putJson($this->endpoint, $data)->assertValid();
+    }
+
+    public function test_update_all_invalid(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $data = [];
+
+        $this->putJson($this->endpoint, $data)
+        ->assertInvalid([
+            'are_read'
+        ]);
+
+        $data = [
+            'are_read'
+        ];
+
+        $this->putJson($this->endpoint, $data)
+        ->assertInvalid([
+            'are_read'
+        ]);
+
+        $data = [
+            'are_read' => null
+        ];
+
+        $this->putJson($this->endpoint, $data)
+        ->assertInvalid([
+            'are_read'
+        ]);
+
+        $data = [
+            'are_read' => ''
+        ];
+
+        $this->putJson($this->endpoint, $data)
+        ->assertInvalid([
+            'are_read'
+        ]);
+
+        $data = [
+            'are_read' => ' '
+        ];
+
+        $this->putJson($this->endpoint, $data)
+        ->assertInvalid([
+            'are_read'
+        ]);
     }
 }

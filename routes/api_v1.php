@@ -7,5 +7,8 @@ use Illuminate\Support\Facades\Route;
 Route::post('printful/webhook', PrintfulWebhookController::class);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::resource('users.notifications', NotificationController::class)->only('index');
+    Route::put('notifications', [NotificationController::class, 'updateAll']);
+    Route::resource('notifications', NotificationController::class)->only([
+        'index', 'update'
+    ]);
 });

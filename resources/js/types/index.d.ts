@@ -4,6 +4,7 @@ export interface User {
     email: string;
     email_verified_at: string;
     cart: Cart;
+    unread_notifications_exists: boolean;
 }
 
 export interface Product {
@@ -67,8 +68,12 @@ export interface Location {
 
 export interface Notification {
     id: string;
-    order_id?: number;
     type: string;
+    created_at?: string;
+    read_at?: string | null;
+    data: {
+        order_id?: number;
+    }
 }
 
 export interface PaginationInfo<T> {

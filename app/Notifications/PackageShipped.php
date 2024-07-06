@@ -51,6 +51,15 @@ class PackageShipped extends Notification
     public function toArray(object $notifiable): array
     {
         return [
+            'data' => [
+                'order_id' => $this->order->id,
+            ]
+        ];
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+        return [
             'order_id' => $this->order->id,
         ];
     }

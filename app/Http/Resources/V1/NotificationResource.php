@@ -17,6 +17,7 @@ class NotificationResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'type' => $this->type,
             'data' => $this->data,
             'read_at' => $this->read_at,
             'created_at' => Carbon::createFromTimeString($this->created_at)->diffForHumans(),

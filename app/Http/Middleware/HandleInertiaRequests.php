@@ -29,6 +29,8 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $request->user()?->loadExists('unreadNotifications');
+
         return [
             ...parent::share($request),
             'auth' => [
@@ -37,7 +39,8 @@ class HandleInertiaRequests extends Middleware
                     'name', 
                     'email', 
                     'email_verified_at', 
-                    'cart'
+                    'cart',
+                    'unread_notifications_exists',
                 ]),
             ],
             'flash' => [
