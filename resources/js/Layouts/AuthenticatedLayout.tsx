@@ -1,13 +1,12 @@
-import { useState, PropsWithChildren, useEffect } from "react";
+import {
+    useState,
+    PropsWithChildren,
+    useEffect,
+} from "react";
 import ApplicationLogo from "@/Components/ApplicationLogo";
 import { Link, router } from "@inertiajs/react";
 import { Notification as NotificationType, User } from "@/types";
-import {
-    Button,
-    DarkThemeToggle,
-    Flowbite,
-    Sidebar,
-} from "flowbite-react";
+import { Button, DarkThemeToggle, Flowbite, Sidebar } from "flowbite-react";
 import {
     HiArrowSmRight,
     HiShoppingBag,
@@ -20,6 +19,7 @@ import { Avatar } from "flowbite-react";
 import Notification from "@/Components/Notification";
 import axios from "axios";
 import NotificationsDropdown from "@/Components/NotificationsDropdown";
+import NewSupportChatButton from "@/Components/NewSupportChatButton";
 
 export default function Authenticated({
     user,
@@ -53,11 +53,14 @@ export default function Authenticated({
     const [incomingNotifications, setIncomingNotifications] = useState<
         NotificationType[]
     >([]);
-    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [showingNavigationDropdown, setShowingNavigationDropdown] =
+        useState(false);
 
     const getNotifications = (cursor: string | null) => {
         axios
-            .get(`${window.location.origin}/api/v1/notifications?cursor=${cursor}`)
+            .get(
+                `${window.location.origin}/api/v1/notifications?cursor=${cursor}`
+            )
             .then((response) => {
                 // response.data has props: data, links and meta
                 setNextCursor(response.data.meta.next_cursor);
@@ -92,17 +95,19 @@ export default function Authenticated({
                                 <DarkThemeToggle />
                             </Flowbite>
                         </div>
-                        <NotificationsDropdown 
-                            unreadNotificationsExists={user.unread_notifications_exists}
+                        <NotificationsDropdown
+                            unreadNotificationsExists={
+                                user.unread_notifications_exists
+                            }
                             notifications={notifications}
                             nextCursor={nextCursor}
                             onScrollEnd={() => {
-                                getNotifications(nextCursor)
+                                getNotifications(nextCursor);
                             }}
                             onBeginning={() => {
-                                setNotifications(null)
-                                getNotifications(null)
-                            }}  
+                                setNotifications(null);
+                                getNotifications(null);
+                            }}
                         />
                         <Avatar
                             className="cursor-pointer"
@@ -215,14 +220,20 @@ export default function Authenticated({
                 <main className="flex-grow overflow-hidden">{children}</main>
 
                 {/* Floating and auto dismiss notifications div */}
-                <div className="fixed flex-col-reverse hidden gap-2 overflow-hidden w-80 max-h-52 bottom-5 right-5 md:flex xl:max-h-72">
-                    {incomingNotifications.map((notification, index) => (
-                        <Notification
-                            key={index}
-                            autoDismiss={true}
-                            notification={notification}
-                        />
-                    ))}
+                <div className="fixed flex items-end gap-2 bottom-5 right-5">
+                    {
+                        route().current("dashboard") && <NewSupportChatButton />
+                    }
+                    
+                    <div className="flex-col-reverse hidden gap-2 overflow-hidden max-w-80 max-h-52 md:flex xl:max-h-72">
+                        {incomingNotifications.map((notification, index) => (
+                            <Notification
+                                key={index}
+                                autoDismiss={true}
+                                notification={notification}
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

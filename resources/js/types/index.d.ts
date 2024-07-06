@@ -96,14 +96,16 @@ export interface PaginationInfo<T> {
     total: number;
 }
 
+export interface Flash {
+    message: string | null;
+    type: 'error' | 'notification' | null;
+}
+
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     auth: {
         user: User | null;
     };
-    flash: {
-        message: string | null;
-        type: 'error' | 'notification' | null;
-    },
+    flash: Flash,
     can: {
         [key: string]: boolean;
     }
