@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\OrderController;
@@ -43,6 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('carts', CartController::class)->only(['show']);
     Route::resource('orders', OrderController::class)->only(['index', 'show', 'destroy']);
     Route::resource('locations', LocationController::class)->except(['index', 'show']);
+    Route::resource('chats', ChatController::class)->only(['show', 'store']);
 
     Route::middleware(EnsurePreferredLocationIsSet::class)->group(function () {
         Route::resource('orders', OrderController::class)->only(['store', 'update']);
