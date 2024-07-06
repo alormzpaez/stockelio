@@ -90,7 +90,7 @@ export default function Notification({
                 <>
                     {show && (
                         <>
-                            <Toast className="toast">
+                            <Toast className="border border-gray-300 dark:border-gray-600">
                                 <div className="inline-flex items-center justify-center w-8 h-8 text-green-500 bg-green-100 rounded-lg shrink-0 dark:bg-green-800 dark:text-green-200">
                                     <FaShippingFast className="w-5 h-5" />
                                 </div>
