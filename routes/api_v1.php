@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\MessageController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PrintfulWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -11,4 +12,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::resource('notifications', NotificationController::class)->only([
         'index', 'update'
     ]);
+    Route::resource('chats.messages', MessageController::class)->only('index');
 });
