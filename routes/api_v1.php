@@ -12,5 +12,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::resource('notifications', NotificationController::class)->only([
         'index', 'update'
     ]);
-    Route::resource('chats.messages', MessageController::class)->only('index');
+    Route::resource('chats.messages', MessageController::class)->only([
+        'index',
+        'store',
+    ]);
 });

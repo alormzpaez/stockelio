@@ -101,6 +101,18 @@ export interface Flash {
     type: 'error' | 'notification' | null;
 }
 
+export interface Chat {
+    id: number;
+    receiver: User;
+}
+
+export interface Message {
+    user_id: number;
+    body: string;
+    read_at: string|null;
+    created_at: string;
+}
+
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     auth: {
         user: User | null;

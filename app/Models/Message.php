@@ -22,6 +22,16 @@ class Message extends Model
         ];
     }
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'body',
+        'user_id',
+    ];
+
     public function chat(): BelongsTo
     {
         return $this->belongsTo(Chat::class);

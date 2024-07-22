@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\V1\StoreMessageRequest;
 use App\Http\Resources\V1\MessageResource;
 use App\Models\Chat;
 use App\Models\Message;
@@ -19,7 +20,7 @@ class MessageController extends Controller
         Gate::authorize('view', $chat);
 
         $messages = Message::whereRelation('chat', 'id', $chat->id)
-            ->latest('created_at')
+            ->latest('id')
         ->cursorPaginate();
 
         return MessageResource::collection($messages);
@@ -28,9 +29,16 @@ class MessageController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, Chat $chat)
+    public function store(StoreMessageRequest $request, Chat $chat)
     {
-        //
+        Gate::authorize('view', $chat);
+
+        $message = $chat->messages()->create([
+            'user_id' => $request->user()->id,
+            'body' => $request->validated('body'),
+        ]);
+
+        return new MessageResource($message);
     }
 
     /**

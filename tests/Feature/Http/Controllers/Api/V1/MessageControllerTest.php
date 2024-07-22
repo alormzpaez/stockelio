@@ -29,7 +29,7 @@ class MessageControllerTest extends TestCase
         $this->getJson("api/v1/chats/{$chat->id}/messages/{$message->id}")
         ->assertNotFound(); // show
         $this->postJson("api/v1/chats/{$chat->id}/messages")
-        ->assertMethodNotAllowed(); // store
+        ->assertUnauthorized(); // store
         $this->putJson("api/v1/chats/{$chat->id}/messages/{$message->id}")
         ->assertNotFound(); // update
         $this->deleteJson("api/v1/chats/{$chat->id}/messages/{$message->id}")
@@ -49,8 +49,7 @@ class MessageControllerTest extends TestCase
         $this->getJson("api/v1/chats/{$chat->id}/messages")->assertOk(); // index
         $this->getJson("api/v1/chats/{$chat->id}/messages/{$message->id}")
         ->assertNotFound(); // show
-        $this->postJson("api/v1/chats/{$chat->id}/messages")
-        ->assertMethodNotAllowed(); // store
+        $this->postJson("api/v1/chats/{$chat->id}/messages")->assertUnprocessable(); // store
         $this->putJson("api/v1/chats/{$chat->id}/messages/{$message->id}")
         ->assertNotFound(); // update
         $this->deleteJson("api/v1/chats/{$chat->id}/messages/{$message->id}")
@@ -70,8 +69,9 @@ class MessageControllerTest extends TestCase
         $this->getJson("api/v1/chats/{$chat->id}/messages")->assertForbidden(); // index
         $this->getJson("api/v1/chats/{$chat->id}/messages/{$message->id}")
         ->assertNotFound(); // show
-        $this->postJson("api/v1/chats/{$chat->id}/messages")
-        ->assertMethodNotAllowed(); // store
+        $this->postJson("api/v1/chats/{$chat->id}/messages", [
+            'body' => 'Some text',
+        ])->assertForbidden(); // store
         $this->putJson("api/v1/chats/{$chat->id}/messages/{$message->id}")
         ->assertNotFound(); // update
         $this->deleteJson("api/v1/chats/{$chat->id}/messages/{$message->id}")
@@ -90,11 +90,85 @@ class MessageControllerTest extends TestCase
             ->assertOk()
         ->assertJson(fn (AssertableJson $json) =>
             $json->has('data', 1, fn (AssertableJson $json) =>
-                $json->has('body')
+                $json->has('id')
+                    ->has('body')
                     ->has('read_at')
                     ->has('created_at')
                 ->has('user_id')
             )->etc()
         );
+    }
+
+    public function test_store(): void
+    {
+        Sanctum::actingAs($user = User::factory()->create());
+        $chat = Chat::factory()
+            ->hasAttached([$user])
+        ->create();
+        
+        $this->assertDatabaseEmpty('messages');
+        
+        $data = [
+            'body' => 'Some text',
+        ];
+
+        $this->postJson("api/v1/chats/{$chat->id}/messages", $data)
+            ->assertValid()
+        ->assertCreated();
+
+        $chat->load('messages');
+
+        $this->assertDatabaseCount('messages', 1);
+        $this->assertDatabaseHas('messages', [
+            'user_id' => $user->id,
+        ]);
+        $this->assertNotEmpty($chat->messages);
+    }
+
+    public function test_store_invalid(): void
+    {
+        Sanctum::actingAs($user = User::factory()->create());
+        $chat = Chat::factory()
+            ->hasAttached([$user])
+            ->hasUsers()
+        ->create();
+        
+        $data = [];
+
+        $this->postJson("api/v1/chats/{$chat->id}/messages", $data)->assertInvalid([
+            'body',
+        ]);
+
+        $data = [
+            'body',
+        ];
+
+        $this->postJson("api/v1/chats/{$chat->id}/messages", $data)->assertInvalid([
+            'body',
+        ]);
+
+        $data = [
+            'body' => null,
+        ];
+
+        $this->postJson("api/v1/chats/{$chat->id}/messages", $data)->assertInvalid([
+            'body',
+        ]);
+
+        $data = [
+            'body' => '',
+        ];
+
+        $this->postJson("api/v1/chats/{$chat->id}/messages", $data)->assertInvalid([
+            'body',
+        ]);
+
+        $data = [
+            'body' => ' ',
+        ];
+
+        $this->postJson("api/v1/chats/{$chat->id}/messages", $data)->assertInvalid([
+            'body',
+        ]);
     }
 }
