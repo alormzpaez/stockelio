@@ -73,6 +73,24 @@ class ChatControllerTest extends TestCase
         );
     }
 
+    public function test_show_non_belonging_chat(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $chat = Chat::factory()
+            ->hasAttached([$user1, $user2])
+        ->create();
+
+        $this->get(route('chats.show', $chat->id))->assertForbidden();
+        
+        Sanctum::actingAs($user1);
+        
+        $this->get(route('chats.show', $chat->id))->assertOk();
+    }
+
     public function test_store(): void
     {
         $this->seed(RoleAndPermissionSeeder::class);

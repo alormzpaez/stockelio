@@ -8,6 +8,7 @@ use App\RolesEnum;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Session;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -65,6 +66,8 @@ class ChatController extends Controller
      */
     public function show(Chat $chat): Response
     {
+        Gate::authorize('view', $chat);
+
         $chat->load('users');
 
         return Inertia::render('Chats/Show', [
