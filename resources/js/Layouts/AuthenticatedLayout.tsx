@@ -24,9 +24,9 @@ import NewSupportChatButton from "@/Components/NewSupportChatButton";
 export default function Authenticated({
     user,
     children,
-}: PropsWithChildren<{ user: User }>) {
+}: PropsWithChildren<{ user: User|null }>) {
     useEffect(() => {
-        (window as any).Echo.private(`App.Models.User.${user.id}`).notification(
+        (window as any).Echo.private(`App.Models.User.${user?.id}`).notification(
             (notification: NotificationType) => {
                 router.reload({
                     only: ["auth.user.unread_notifications_exists"],
@@ -42,7 +42,7 @@ export default function Authenticated({
         );
 
         return () => {
-            (window as any).Echo.leave(`App.Models.User.${user.id}`);
+            (window as any).Echo.leave(`App.Models.User.${user?.id}`);
         };
     }, []);
 
@@ -97,7 +97,7 @@ export default function Authenticated({
                         </div>
                         <NotificationsDropdown
                             unreadNotificationsExists={
-                                user.unread_notifications_exists
+                                user?.unread_notifications_exists ?? false
                             }
                             notifications={notifications}
                             nextCursor={nextCursor}
@@ -116,7 +116,7 @@ export default function Authenticated({
                             statusPosition="bottom-right"
                         >
                             <div className="hidden space-y-1 font-medium dark:text-white md:block">
-                                <div>{user.name}</div>
+                                <div>{user?.name}</div>
                             </div>
                         </Avatar>
                         <Button
@@ -185,7 +185,7 @@ export default function Authenticated({
                                     onClick={() => {
                                         setShowingNavigationDropdown(false);
                                     }}
-                                    href={route("carts.show", user.cart.id)}
+                                    href={route("carts.show", user?.cart.id)}
                                 >
                                     <Sidebar.Item icon={FaShoppingCart}>
                                         Mi carrito
