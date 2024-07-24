@@ -1,9 +1,9 @@
 import Message from "@/Components/Message";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import useChat from "@/shared/hooks/useChat";
 import { Chat, Message as MessageType, PageProps } from "@/types";
 import { Head, router } from "@inertiajs/react";
 import { useIntersectionObserver } from "@uidotdev/usehooks";
-import axios from "axios";
 import { Avatar, Button, Textarea } from "flowbite-react";
 import { FormEventHandler, ReactElement, useEffect, useState } from "react";
 import { FaArrowLeft, FaSpinner } from "react-icons/fa";
@@ -15,73 +15,42 @@ function Show({
 }: PageProps<{
     chat: Chat;
 }>) {
-    const [body, setBody] = useState('');
+    const [body, setBody] = useState("");
     const [ref, entry] = useIntersectionObserver({
         threshold: 0,
         root: null,
         rootMargin: "0px",
     });
-    const [nextCursor, setNextCursor] = useState(null);
-    const [messages, setMessages] = useState<MessageType[] | null>(null);
-
-    const getMessages = (cursor: string | null) => {
-        axios
-            .get(
-                `${window.location.origin}/api/v1/chats/${chat.id}/messages?cursor=${cursor}`
-            )
-            .then((response) => {
-                // response.data has props: data, links and meta
-                setNextCursor(response.data.meta.next_cursor);
-
-                if (cursor) {
-                    setMessages((prevMessages) => [
-                        ...(prevMessages ?? []),
-                        ...response.data.data,
-                    ]);
-                } else {
-                    setMessages(response.data.data);
-                }
-            })
-            .catch((e) => {
-                // console.log(e);
-            });
-    };
+    const {
+        messages,
+        getInitialMessages,
+        getNextMessages,
+        sendMessage,
+        areThereMessagesForLoad,
+        isTyping, 
+        isInChat, 
+        typing
+    } = useChat({ 
+        chat,
+        onSendMessage: () => {
+            setBody("")
+        }
+    })
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        axios
-            .post(
-                `${window.location.origin}/api/v1/chats/${chat.id}/messages`,
-                {
-                    body,
-                }
-            )
-            .then((response) => {
-                setBody('')
-                getMessages(null)
-            })
-            .catch((e) => {
-                // console.log('error: ', e);
-            });
-    };
-
-    const onScrollEnd = () => {
-        getMessages(nextCursor);
-    };
-
-    const onBeginning = () => {
-        getMessages(null);
+        sendMessage(body)
     };
 
     useEffect(() => {
         if (entry?.isIntersecting) {
-            onScrollEnd();
+            getNextMessages()
         }
     }, [entry?.isIntersecting]);
 
     useEffect(() => {
-        onBeginning();
+        getInitialMessages()
     }, []);
 
     return (
@@ -107,7 +76,11 @@ function Show({
                                 <div className="text-base font-medium dark:text-white">
                                     <div>{chat.receiver.name}</div>
                                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                                        En el chat
+                                        {isTyping
+                                            ? "Escribiendo..."
+                                            : isInChat
+                                            ? "En el chat"
+                                            : null}
                                     </div>
                                 </div>
                             </Avatar>
@@ -148,7 +121,7 @@ function Show({
                                                     />
                                                 )
                                             )}
-                                            {nextCursor && (
+                                            {areThereMessagesForLoad && (
                                                 <div
                                                     ref={ref}
                                                     className="flex justify-center"
@@ -174,9 +147,10 @@ function Show({
                                             required
                                             rows={4}
                                             value={body}
-                                            onChange={(e) =>
+                                            onChange={(e) => {
+                                                typing()
                                                 setBody(e.target.value)
-                                            }
+                                            }}
                                         />
                                         <Button
                                             type="submit"

@@ -73,7 +73,9 @@ class ChatController extends Controller
         return Inertia::render('Chats/Show', [
             'chat' => [
                 'id' => $chat->id,
-                'receiver' => $chat->users->firstWhere('id', '!=', request()->user()->id)->only('name')
+                'receiver' => $chat->users
+                    ->firstWhere('id', '!=', request()->user()->id)
+                ->only(['id', 'name'])
             ]
         ]);
     }

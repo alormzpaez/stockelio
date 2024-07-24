@@ -2,11 +2,13 @@
 
 namespace Tests\Feature\Http\Controllers\Api\V1;
 
+use App\Events\NewMessage;
 use App\Models\Chat;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -101,6 +103,8 @@ class MessageControllerTest extends TestCase
 
     public function test_store(): void
     {
+        Event::fake();
+
         Sanctum::actingAs($user = User::factory()->create());
         $chat = Chat::factory()
             ->hasAttached([$user])
@@ -123,6 +127,8 @@ class MessageControllerTest extends TestCase
             'user_id' => $user->id,
         ]);
         $this->assertNotEmpty($chat->messages);
+
+        Event::assertDispatched(NewMessage::class);
     }
 
     public function test_store_invalid(): void

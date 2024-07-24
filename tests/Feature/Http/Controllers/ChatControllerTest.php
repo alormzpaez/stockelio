@@ -67,7 +67,8 @@ class ChatControllerTest extends TestCase
             ->has('chat', fn (AssertableInertia $page) =>
                 $page->has('id')
                 ->has('receiver', fn (AssertableInertia $page) =>
-                    $page->has('name')
+                    $page->has('id')
+                    ->has('name')
                 )
             )
         );

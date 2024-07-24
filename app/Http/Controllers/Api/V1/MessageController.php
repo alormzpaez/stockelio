@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Events\NewMessage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\StoreMessageRequest;
 use App\Http\Resources\V1\MessageResource;
@@ -37,6 +38,8 @@ class MessageController extends Controller
             'user_id' => $request->user()->id,
             'body' => $request->validated('body'),
         ]);
+
+        broadcast(new NewMessage($message))->toOthers();
 
         return new MessageResource($message);
     }
