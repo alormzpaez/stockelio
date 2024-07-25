@@ -21,6 +21,24 @@ class ChatTest extends TestCase
         $this->assertInstanceOf(Message::class, $chat->messages->get(0));
     }
 
+    public function test_has_one_latest_message(): void
+    {
+        $chat = Chat::factory()->create();
+
+        Message::factory()
+            ->for($chat)
+        ->create();
+
+        $this->travelTo(now()->addMinute());
+
+        $message = Message::factory()
+            ->for($chat)
+        ->create();
+
+        $this->assertInstanceOf(Message::class, $chat->latestMessage);
+        $this->assertEquals($message->id, $chat->latestMessage->id);
+    }
+
     public function test_belongs_to_many_users(): void
     {
         $chat = Chat::factory()->create();
